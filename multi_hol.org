@@ -1,0 +1,570 @@
+#+TITLE: Bereinigung von mehrfach-Holdings
+#+NIKOLA_SLUG: multi-hol
+#+AUTHOR: Stefan Schuh
+#+EMAIL: stefan.schuh@uni-graz.at
+#+DATE: 2018-07-23 17:52
+#+DESCRIPTION:
+#+KEYWORDS:
+#+RST: .. status: draft
+#+OPTIONS: H:4 num:nil toc:nil ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS: tex:t todo:t pri:nil tags:t texht:nil
+#+OPTIONS: author:nil creator:nil email:nil date:t
+#+EXPORT_FILE_NAME: ~/projects/alma-rm/pages/multi-hol.rst
+
+
+* Ausgangslage und Ziel
+  Bei der Datenvorbereitung vor der Migration konnten nicht alle Exemplare einem
+  Holding zugeordnet werden, weil in Aleph kein HOL vorhanden war. Infolgedessen
+  gibt es Titeldatensätze mit bis zu 678 Holdings mit je einem Item.
+
+  [[file:data/DHB_ITEMS_ohne_HOL_20180717.xlsx][Auswertung (Aleph) der DHB-Datensätze ohne Holding]]
+
+  Es handelt sich um insgesamt 41639 Exemplare an 291 AC-Sätzen und 2394 LB-Sätzen.
+
+  Ziel ist es, die Exemplare an diesen mehrfach-HOLs an ein einzelnes Holding zu
+  hängen und die überschüssigen HOLs zu löschen. Dies sollte in einem
+  halbautomatischen Prozess passieren (wenn es vollautomatisch ginge, hätten wir
+  das wohl schon vorher in Aleph gemacht), weil eine manuelle Bereinigung nicht
+  leistbar ist.
+
+*** Angestrebter Workflow
+    Eine Bearbeiterin stößt auf einen der betroffenen Datensätze und will ihn
+    bereinigen. Dazu sollte sie die folgenden Schritte ausführen müssen:
+
+    1. Das Holding anlegen, an dem die Items im Endeffekt hängen sollen. Wichtig
+       ist, dass zumindest Bibliothek, Standort und Grundsignatur eingetragen
+       werden, weil über diese ein Abgleich stattfindet. Wenn notwendig mehrere
+       HOLs (für Indexe, neue folgen, etc.).
+    2. Das Bereinigungsprogramm aufrufen und folgende Daten eingeben:
+       - MMS-ID des Titeldatensatzes (*3339)
+       - MMS-ID des Zielholdings
+     
+   
+*** Was soll das Script leisten?
+    Im Endeffekt sollen alle Items an ihren richtigen Holdings hängen. Dazu
+    sollte aus dem Zielholdings die Grundsignatur ausgelesen werden. Nur
+    Exemplare, bei denen Bibliothek, Standort und Grundsignatur mit dem Holding
+    übereinstimmen, sollten an das jeweilige Holding gehängt werden.
+
+    
+***** Mögliche Probleme
+      - Für die Bearbeiterin
+        - Bei großen Anzahlen an Holdings ist es nicht leicht feststellbar, ob
+          mehrere Zielholdings (für neue Folgen, Indizes etc.) angelegt werden
+          müssen.
+      - Für das Programm
+        - Sind Bestellungen mit einem der vorhandenen HOLs verknüpft?
+
+* Skript
+
+*** Allgemeine Vorbereitungen
+    Dieses Script benötigt Python 3.6 oder höher.
+***** Python Virtual environment
+      Damit immer die richtigen Versionen des Interpreters und der Module
+      verwendet werden, erstellen wir eine Virtual Environment. Dazu führen wir
+      in der Shell folgendes aus:
+
+      #+BEGIN_SRC shell
+        # Die virtuelle Umgebung erstellen
+        python -m venv ~/.venvs/multi-hol
+
+        # Die virtuelle Umgebung aktivieren
+        source ~/.venvs/multi-hol/bin/activate
+      #+END_SRC
+
+
+***** Imports etc.
+      Als erstes importieren wir verschiedenen Module, die wir brauchen:
+
+      #+NAME: imports
+      #+BEGIN_SRC python
+      from sys import argv
+      import os
+      import keyring
+      from requests import Session
+      import urllib.parse
+      import xml.etree.ElementTree as ET
+      import json
+      #+END_SRC
+
+      - =sys.argv= :: um Kommandozeilenargumente entgegenzunehmen
+      - =os= :: Verzeichnisse anlegen, Dateien löschen, etc.
+      - =keyring= :: dient dazu, den API-Key aus dem System-Keyring zu lesen. Für die
+                     Distribution ist das natürlich nicht brauchbar. Im Endeffekt wird man hier
+                     den Key wohl direkt reinschreiben müssen. Achtung: Dieses
+                     Modul gehört nicht zur Standardbibliothek und muss erst via
+                     =pip= installiert werden.
+      - =requests.Session= :: vereinfacht die API-Calls, indem man die Header
+           nicht immer eingeben muss, etc. Achtung: Dieses Modul gehört
+           nicht zur Standardbibliothek und muss erst via =pip= installiert
+           werden.
+      - =urllib.parse= :: wird verwendet, um Strings, die als Teil des URL
+                          verwendet werden, richtig zu codieren
+      - =xml.etree.ElementTree= :: Nachdem wir nicht viel brauchen, ist es
+           einfacher XML zu parsen als die Holdings in pymarc zu lesen, oder in
+           JSON umzuwandeln.
+      - =json= :: Wir bekommen von der Alma Item-Objekte als JSON. Mit dieser Bibliothek
+                  lassen sich JSON-Daten gut manipulieren.
+      
+***** Voreinstellungen für die APIs
+      Nachdem wir viele Calls machen werden, ist es wohl gut, die APIs in
+      Variablen mit benannten Platzhaltern zu schreiben, sodass wir dann nur
+      noch die jeweiligen IDs einfüllen müssen:
+      
+      #+NAME: api-strings
+      #+BEGIN_SRC python
+      # api-url-templates
+      base_url = 'https://api-eu.hosted.exlibrisgroup.com/almaws/v1'
+      barcode_api = base_url + "/items?item_barcode={barcode}"
+      holdings_api = base_url + "/bibs/{mms_id}/holdings"
+      bib_api = base_url + "/bibs/{mms_id}"
+      item_api = base_url + "/bibs/{mms_id}/holdings/{holding_id}/items"
+      #+END_SRC
+
+***** Session, Authentifizierung
+      Damit wir nicht bei jedem Aufruf die Header übergeben müssen, ist es
+      praktisch, dass die requests-Bibliothek ein Session-Objekt hat.
+
+      #+NAME: session
+      #+BEGIN_SRC python
+      # session um immer gleiche header zu schicken etc.
+      session = Session()
+      session.headers.update({
+          "accept": "application/json",
+          "authorization": f"apikey {api_key}"
+      })
+      #+END_SRC
+
+      Den API-Key hole ich mit der keyring-Bibliothek aus dem System-Keyring.
+      Für eine Deployment-Version muss man den Key wohl hereinschreiben.
+
+      #+NAME: API-key
+      #+BEGIN_SRC python
+      # get api key from system keyring
+      api_key = keyring.get_password("ALMA-API", "BIB-Sandbox").rstrip()
+      #+END_SRC
+*** Verarbeitung      
+***** TODO Feststellen, welche Datensätze bearbeitet werden sollen und ein paar Daten auslesen
+      Um zu wissen, an welchen Datensätzen gearbeitet werden soll, muss die
+      Bearbeiterin die MMS-IDs vom Bibsatz und dem Zielolding eingeben.
+
+      Nachdem Whitespace vorne und hinten entfern wurde, sollte folgendes
+      überprüft werden:
+      - [ ] Beginnt die bib-mms mit 99?
+      - [ ] Beginnt die hol-mms mit 99?
+      - [ ] Enden bib-mms und hol-mms auf 3339?
+      #+NAME: MMS-IDs
+      #+BEGIN_SRC python
+      def get_mmsids():
+          """Return the MMS-IDs of the bibrecord and the target-holding."""
+          pass
+      #+END_SRC
+
+***** DONE Items holen
+      CLOSED: [2018-07-30 Mon 13:54]
+      :LOGBOOK:
+      - State "DONE"       from "TODO"       [2018-07-30 Mon 13:54]
+      :END:
+      Nachdem die Bearbeiterin uns mit den Identifiern versorgt hat, holen wir
+      uns die Item-Liste. Nachdem die API per default nur zehn Items liefert,
+      setzen wir das Limit auf die höchstzahl (100). Sollten mehr als 100
+      Exemplare vorhanden sein, machen wir mehrere API-Aufrufe mit
+      entsprechendem Offset.
+
+      Dazu verwenden wir eine Funktion, die die MMS-IDs des Bibsatzes und eine
+      Liste von Item-Objekten zurückgibt.
+
+      #+NAME: API-get-items
+      #+BEGIN_SRC python
+        def get_items(mms_id):
+            mms_id = mms_id
+            outlist = []
+
+            # get the item-list from Alma
+            item_list = session.get(item_api.format(mms_id=mms_id, holding_id="ALL"),
+                                    params={"limit": "100"})
+
+            # TODO check response
+            if check_response_item(item_list) == "ok":
+                item_list = item_list.json()
+
+            # append the items to the list to be returned
+            for item in item_list["item"]:
+                outlist.append(item)
+
+            # check if there are more than 100 items
+            total_record_count = int(item_list["total_record_count"])
+            if total_record_count > 100:
+                # calculate number of needed additional calls
+                add_calls = total_record_count // 100
+
+                # TODO make the additional calls and add answer to the outlist
+                for i in range(add_calls):
+                    offset = (i + 1) * 100
+
+                    next_list = session.get(item_api.format(mms_id=mms_id, holding_id="ALL"),
+                                            params={"limit": "100", "offset": offset}).json()
+                    for item in next_list["item"]:
+                        outlist.append(item)
+
+            # TODO save the item list to disk
+            backup_file = os.path.join(backup_dir, f"{mms_id}_items.json")
+            save_json(item, backup_file)
+            return outlist
+
+      #+END_SRC
+
+***** TODO Checks machen
+
+******* TODO API-Checks
+        Überprüft, ob API-Aufrufe erfolgreich waren, etc.
+
+        #+NAME: check-item-api-response
+        #+BEGIN_SRC python
+          def check_response_item(response):
+              return "ok"
+        #+END_SRC
+
+********* Code für API-Checks zusammensetzen                       :noexport:
+          Der Übersichtlichkeit halber wollen wir alle API-Checks mit einem
+          noweb-Ausdruck zusammenfassen. Nachdem das in der Doku redundant wäre,
+          wird dieser Teil nicht exportiert.
+
+          #+NAME: check-api-res-funcs
+          #+BEGIN_SRC python :noweb yes :exports none
+          <<check-item-api-response>>
+          #+END_SRC
+
+******* TODO Inhaltliche Checks
+        Überprüfung, ob die richtigen Signaturen vorhanden sind, etc. Dazu holen
+        wir uns zuerst das Zielholding und lesen dort =856 b=, =c= und =h= aus.
+        
+        #+NAME: get-bch
+        #+BEGIN_SRC python
+          def get_bch(holding_id):
+              hol = session.get(holdings_api + "/" + holding_id, headers = {"accept": "application/xml"})
+              holxml = ET.fromstring(hol.text)
+              b = holxml.find('.//*[@tag="852"]/*[@code="b"]').text
+              c = holxml.find('.//*[@tag="852"]/*[@code="c"]').text
+              h = holxml.find('.//*[@tag="852"]/*[@code="h"]').text
+
+              return b, c, h
+        #+END_SRC
+
+        Dann schauen wir, ob das Item zum HOL passt. Subfelder =b= und =c=
+        müssen übereinstimmen; die Signatur des Items (genaugenommen von dessen
+        HOL) muss mit demselben String anfangen, der in Subfeld =h= steht.
+
+        #+NAME: check-bch
+        #+BEGIN_SRC python
+          # check if the item fits the target holding's 852 b, c and h
+
+          def check_bch(item, hol_bch):
+              """Check if the item fits the target holdings library, location and call number.
+
+              Take an item object (dict) and return True or False."""
+
+              hol_b = hol_bch[0]
+              hol_c = hol_bch[1]
+              hol_h = hol_bch[2]
+
+              item_b = item["item_data"]["library"]["value"]
+              item_c = item["item_data"]["location"]["value"]
+              item_h = item["holding_data"]["call_number"]
+
+              bch_check = [False, False, False]
+
+              if hol_b == item_b:
+                  bch_check[0] = True
+
+              if hol_c == item_c:
+                  bch_check[1] = True
+
+              if item_h.startswith(hol_h):
+                  bch_check[2] = True
+
+              if False in bch_check:
+                  return False
+              else:
+                  return True
+        #+END_SRC
+
+********* Code für Inhaltliche checks zusammensetzen               :noexport:
+          #+NAME: content-checks
+          #+BEGIN_SRC python :noweb yes
+            <<get-bch>>
+            <<check-bch>>
+          #+END_SRC
+***** TODO Sicherungen machen
+******* TODO Das Sicherungsverzeichnis festlegen
+        Hier legen wir das Verzeichnis fest, in das die Sicherungen und reports
+        kommen. Falls es nicht vorhanden ist, erstellen wir es.
+        
+        #+NAME: configure-backup
+        #+BEGIN_SRC python
+          backup_dir = os.path.join(os.path.expanduser("~"), "Dokumente", "ALMA_multi-hol")
+          # make the directory if it does not exist
+          if not os.path.exists(backup_dir):
+              os.makedirs(backup_dir)
+        #+END_SRC
+
+******* TODO Items
+        Nachdem wir ja von =get_items()= eine Liste mit Item-Objekten
+        zurückbekommen, schreiben wir diese einfach in eine Datei.
+
+        #+NAME: save-items
+        #+BEGIN_SRC python
+          def save_json(json_list, filename):
+              """Save JSON-file with a list of items to disk.
+
+              Takes a list of JSON-objects."""
+
+              with open(filename, "w") as backup:
+                  try:
+                      backup.write(json.dumps(json_list))
+                  except:
+                      # TODO log error/display message and quit()
+                      print("!!! Backup konnte nicht geschrieben werden.\n!!! Verarbeitung wird abgebrochen")
+                      return 1
+        #+END_SRC
+        
+***** DONE Änderungen an den Items machen
+      CLOSED: [2018-08-01 Mit 07:14]
+      An den Exemplaren sind unter Umständen noch Änderungen vorzunehmen. Diese
+      beziehen sich in erste Linie auf die Signaturen.
+******* DONE Bearbeitung der Signaturen
+        CLOSED: [2018-07-31 Die 11:13]
+        Nachdem im Zielholding ja nur die Grundsignatur steht, würde diese
+        Information verloren gehen. Daher schreiben wir sie in die Alternative
+        Signatur des Exemplars.
+
+        Damit eine etwaig schon vorhandene alternative Signatur nicht
+        überschrieben wird, prüfen wir vorher, ob dort schon eine HB-Signatur
+        vorhanden ist. Wenn ja, wird die Signatur aus dem Holding nach =" ; "=
+        eingefügt.
+
+        #+NAME: set-alt-call-nr
+        #+BEGIN_SRC python
+          alt_call_nr = item["item_data"]["alternative_call_number"]
+          hol_call_nr = item["holding_data"]["call_number"]
+
+          # check if the alternative call number is empty
+          if alt_call_nr == "":
+              alt_call_nr = item["item_data"]["alternative_call_number"] = hol_call_nr
+              item["item_data"]["alternative_call_number_type"]["value"] = 8
+              item["item_data"]["alternative_call_number_type"]["desc"] = "Other scheme"
+          else:
+              item["item_data"]["alternative_call_number"] = f"{alt_call_nr} ; {hol_call_nr}"
+
+        #+END_SRC
+******* DONE Exemplarstatus leeren
+        Wir nutzen diese Gelegenheit auch gleich, um den Exemplarstatus zu
+        löschen, der bei diesen Items in Alma nicht mehr notwendig ist.
+
+        #+NAME: clear-item-policy
+        #+BEGIN_SRC python
+          item["item_data"]["policy"]["desc"] == None
+          item["item_data"]["policy"]["value"] == ''
+        #+END_SRC
+
+******* DONE Zusammensetzen der einzelnen Änderungen zu einer Funktion
+        CLOSED: [2018-08-01 Mit 07:14]
+        Damit die einzelnen Änderungen im Script ein bisschen übersichtlicher
+        zusammengefasst sind, ziehen wir sie in eine Funktion
+        =change_item_information()= zusammen, die wir dann während der
+        Bearbeitung aufrufen.
+
+        #+NAME: change-item-information
+        #+BEGIN_SRC python :noweb yes
+          def change_item_information(item):
+              """Make all necessary changes to the item object"""
+              # Set the alternative call number
+              <<set-alt-call-nr>>
+
+              # clear the item policy
+              <<clear-item-policy>>
+              return item
+        #+END_SRC
+***** TODO Items umhängen und Holdings löschen
+      Das Umhängen des Exemplars sollte der letzte Schritt sein. Vorher sollten
+      alle Checks laufen und das Item entsprechend angepasst werden (z. B. die
+      HOL-Signatur in die =alternative_call_number= schreiben).
+
+      Um ein Exemplar umzuhängen, muss man es erst löschen und dann am
+      Zielholding anhängen. Zuerst löschen deswegen, weil sonst der Barcode
+      schon vorhanden ist und einen Error verursacht.
+
+      Um ein Exemplar also umzuhängen, sind folgende Schritte notwendig:
+      1. Das Exemplar sichern. Das sollten wir ohnehin beim Abrufen der
+         Exemplare schon gemacht haben. Die nötigen Funktionen finden sich im
+         [[Sicherungen machen][entsprechenden Kapitel]].
+      2. Das Exemplar via DELETE-request löschen. Wir übergeben den Parameter
+         "holdings=delete", um das Holding gleich mit zu löschen.
+      3. Das Exemplar mit einem POST-request ans Zielholding hängen.
+
+      Der erste Schritt, wird oben abgearbeitet, die beiden weiteren machen wir jetzt.
+******* Problem mit der API # 00580797
+Dear Support Team,
+
+we need to move items from one holding to another via API. As I understand it, the way to go is to delete the item in one place and create it again by POSTing it at the target holding -- if there is a better/more efficient way, I'm glad to hear it.
+
+When doing so, I get an HTTP 200 for evey item I post and the API returns the item object for every item. So I'm thinking everything went right. 
+
+But it gets funky:
+
+When looking in Alma, there's only one item on this holding (the first one I have POSTed), but there should be several. So I try to get the item list for all items on that bib:
+
+GET https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/990011168120203339/holdings/ALL/items
+
+Response:
+{"item":[{"bib_data":{"mms_id":"990011168120203339","title":"Kaerntner Gemeindeblatt","author":null,"issn":null,"isbn":null,"complete_edition":"","network_number":["(Aleph)001116812UBG01","(AT-UBG)LB00780006","LB00780006"],"link":"https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/990011168120203339"},"holding_data":{"holding_id":"22326791880003339","call_number_type":{"value":"8","desc":"Other scheme"},"call_number":"Testsig","accession_number":"","copy_id":"","in_temp_location":false,"temp_library":{"value":null,"desc":null},"temp_location":{"value":null,"desc":null},"temp_call_number_type":{"value":"","desc":null},"temp_call_number":"","temp_policy":{"value":"","desc":null},"link":"https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/990011168120203339/holdings/22326791880003339"},"item_data":{"pid":"23326791890003339","barcode":"DC-25388","creation_date":"2018-08-01Z","modification_date":"2018-08-01Z","base_status":{"value":"1","desc":"Item in place"},"physical_material_type":{"value":"ISSBD","desc":"Bound Issue"},"policy":{"value":"60","desc":"Kopiebestellung"},"provenance":{"value":"","desc":null},"po_line":"","is_magnetic":false,"arrival_date":"1999-04-01Z","year_of_issue":"","enumeration_a":"1971","enumeration_b":"2","enumeration_c":"","enumeration_d":"","enumeration_e":"","enumeration_f":"","enumeration_g":"","enumeration_h":"","chronology_i":"1971","chronology_j":"","chronology_k":"","chronology_l":"","chronology_m":"","description":"1971,2","receiving_operator":"import","process_type":{"value":"","desc":null},"library":{"value":"BDEPO","desc":"Depotbibliothek"},"location":{"value":"DHB20","desc":"Depot HB20"},"alternative_call_number":"HB20-918","alternative_call_number_type":{"value":"8","desc":"Other scheme"},"storage_location_id":"","pages":"","pieces":"","public_note":"","fulfillment_note":"","internal_note_1":"FH03 - I 380584, 1971,2. 1971 :: KKD","internal_note_2":"","internal_note_3":"","statistics_note_1":"O#RAK#2014","statistics_note_2":"","statistics_note_3":"","requested":null,"edition":null,"imprint":null,"language":null,"physical_condition":{"value":null,"desc":null}},"link":"https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/990011168120203339/holdings/22326791880003339/items/23326791890003339"}],"total_record_count":1}
+
+Hmm. Why is there only one item, when I got confirmation that everything went good -- the API returned HTTP 200 and the item object for every item.
+
+It gets even more interesting: When retrieving the items for the specific holding (the only one, I might add), this happens:
+
+GET https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/990011168120203339/holdings/22326792100003339/items
+
+Response:
+{"total_record_count":14}
+
+That's all of the response -- no omissions. Total record count of 14, but no item list?
+
+Best of it all: I can retrieve the individual items via API though (I know where to look for, as I got the item object as response for the POST request).
+
+For example:
+GET https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/990011168120203339/holdings/22326791910003339/items/23326791770003339
+
+This returns the corresponding item.
+
+What am I doing wrong?
+
+If there's an easyer way to move items from one holding to another, I'm happy to be educated about that too.
+
+Best regards
+Stefan
+***** TODO Das Exemplar löschen und kontrollieren, ob es funktioniert hat
+      Zuerst müssen wir das Exemplar löschen. Weil wir das Hol auch nicht mehr
+      brauchen, löschen wir es gleich mit, sofern es sich ums letzte Exemplar handelt.
+
+      #+NAME: delete-item
+      #+BEGIN_SRC python
+        delete_item_response = session.delete(item["link"], params={"holdings": "delete"})
+      #+END_SRC
+      
+      Die API sollte bei Erfolg HTTP 204 zurückgeben. Wenn das Löschen geklappt
+      hat, hängen wir das item ans Zielholding.
+      #+NAME: create-item
+      #+BEGIN_SRC python
+        post_item_response = session.post(item_api.format(mms_id=bib_mms, holding_id=target_hol_id), json=item)
+      #+END_SRC
+
+      Falls der HTTP-Statuscode nicht 204 war, prüfen wir die Antwort und
+      schreiben sie in den Report.
+
+      #+NAME: move-item
+      #+BEGIN_SRC python :noweb yes
+        # TODO Still broken!
+        def move_item(item, target_hol_id):
+            """Move item to other holding and delete source-holding"""
+            <<delete-item>>
+
+            if delete_item_response.status_code == 204:
+                <<create-item>>
+            else:
+                # TODO check response and write to report
+                print("Da ist etwas schief gelaufen.")
+      #+END_SRC
+      
+*** Alles Zusammensetzen
+      #+BEGIN_SRC python :noweb yes :tangle multi_hol/multi_hol.py
+      <<imports>>
+
+      # get everything ready for making the API-Calls
+      <<api-strings>>
+      <<API-key>>
+      <<session>>
+
+      # functions for checking the api-responses
+      <<check-api-res-funcs>>
+      <<content-checks>>
+
+      # set up the backup
+      <<configure-backup>>
+      # function for backing up JSON to disk
+      <<save-items>>
+
+      # Get the users input
+      <<MMS-IDs>>
+      bib_mms = ""
+      target_hol_id = ""
+      # Get the items
+      <<API-get-items>>
+
+      # Change item information like call numbers etc.
+      <<change-item-information>>
+
+      # Move the item to the target holding
+      <<move-item>>
+      #+END_SRC
+         
+*** Tests
+    Natürlich will das alles gut getestet sein.
+
+    Beispieldatensätze in der Sandbox:
+    - 990011505800203339: 10 Hols, keine alternative Signatur
+    - 990011608060203339: 10 Hols, alternative Signatur
+    - 990006489880203339: 106 Hols, alternative Signatur
+      
+    Zuerst holen wir mal alle Exemplare und speichern sie, sodass wir mir
+    schnell den Ausgangszustand wiederherstellen können.
+
+    #+BEGIN_SRC python :noweb yes :tangle tests/test_multi_hol.py
+      import pytest
+      from multi_hol.multi_hol import *
+      # with alternative call number
+      with open("tests/testdata/10items_alt.json") as fh:
+          items_alt = json.load(fh)["item"]
+      # without alternative call number
+      with open("tests/testdata/10items_no_alt.json") as fh:
+          items_no_alt = json.load(fh)["item"]
+
+      item_alt = items_alt.pop(0)
+      item_no_alt = items_no_alt.pop(0)
+
+      def test_get_item():
+          items = get_items("990006489880203339")
+          assert len(items) == 106
+          barcodes = []
+          for item in items:
+              barcodes.append(item["item_data"]["barcode"])
+          assert len(items) == len(barcodes)
+          assert len(set(barcodes)) == len(barcodes)
+
+      def test_get_bch():
+          assert get_bch("22312549980003339") == ("BDEPO", "DHB40", "II 140137, 219,Ind. 1879")
+
+      def test_change_item_info():
+          # load items
+          # with alternative call number
+          with open("tests/testdata/10items_alt.json") as fh:
+              items_alt = json.load(fh)["item"]
+          # without alternative call number
+          with open("tests/testdata/10items_no_alt.json") as fh:
+              items_no_alt = json.load(fh)["item"]
+
+          item_alt = items_alt.pop(0)
+          item_no_alt = items_no_alt.pop(0)
+
+          assert change_item_information(item_alt)["item_data"]["alternative_call_number"] == "HB20-918 ; I 380584/1971,2"
+          assert change_item_information(item_no_alt)["item_data"]["alternative_call_number"] == "I 380010/48"
+          assert change_item_information(item_no_alt)["item_data"]["alternative_call_number_type"]["value"] == 8
+          assert change_item_information(item_no_alt)["item_data"]["alternative_call_number_type"]["desc"] == "Other scheme"
+
+
+    #+END_SRC
+
+* API-Dokumentation
+  - [[https://developers.exlibrisgroup.com/alma/apis/bibs/DELETE/gwPcGly021om4RTvtjbPleCklCGxeYAfEqJOcQOaLEvNcHQT0/ozqu3DGTurs/Xx+GZLELMQamEGJL0f6Mjkdw==/af2fb69d-64f4-42bc-bb05-d8a0ae56936e][Withdraw Item]]
+  - [[https://developers.exlibrisgroup.com/alma/apis/bibs/POST/gwPcGly021om4RTvtjbPleCklCGxeYAfEqJOcQOaLEvNcHQT0/ozqu3DGTurs/XxIP4LrexQUdc=/af2fb69d-64f4-42bc-bb05-d8a0ae56936e][Create Item]]
+  - [[https://developers.exlibrisgroup.com/alma/apis/xsd/rest_item.xsd][Item-Object]]
