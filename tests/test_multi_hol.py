@@ -22,9 +22,6 @@ def test_get_item():
 def test_get_bch():
     assert get_bch("22312549980003339") == ("BDEPO", "DHB40", "II 140137, 219,Ind. 1879")
 
-def test_save_json():
-    pass
-
 def test_change_item_info():
     # load items
     # with alternative call number

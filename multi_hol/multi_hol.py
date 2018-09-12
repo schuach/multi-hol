@@ -5,6 +5,7 @@ from requests import Session
 import urllib.parse
 import xml.etree.ElementTree as ET
 import json
+from time import sleep
 
 # get everything ready for making the API-Calls
 # api-url-templates
@@ -82,6 +83,11 @@ def save_json(json_list, filename):
             # TODO log error/display message and quit()
             print("!!! Backup konnte nicht geschrieben werden.\n!!! Verarbeitung wird abgebrochen")
             return 1
+backup = "tests/testdata/testitems.json"
+with open(backup) as backup:
+    items = json.load(backup)
+    for item in items:
+        post_item_response = session.post(item_api.format(mms_id="9929806060303339", holding_id="22327292200003339"), json=item)
 
 # Get the users input
 def get_mmsids():
@@ -136,7 +142,7 @@ def change_item_information(item):
     
     # check if the alternative call number is empty
     if alt_call_nr == "":
-        alt_call_nr = item["item_data"]["alternative_call_number"] = hol_call_nr
+        item["item_data"]["alternative_call_number"] = hol_call_nr
         item["item_data"]["alternative_call_number_type"]["value"] = 8
         item["item_data"]["alternative_call_number_type"]["desc"] = "Other scheme"
     else:
@@ -150,12 +156,13 @@ def change_item_information(item):
 
 # Move the item to the target holding
 # TODO Still broken!
-def move_item(item, target_hol_id):
-    """Move item to other holding and delete source-holding"""
-    delete_item_response = session.delete(item["link"], params={"holdings": "delete"})
+def move_items(item_list, target_hol_id):
+    """Move items to other holding and delete source-holding"""
+    for item in item_list:
+        delete_item_response = session.delete(item["link"], params={"holdings": "delete"})
 
-    if delete_item_response.status_code == 204:
+    # sleep for some seconds to give alma time
+    sleep(5)
+
+    for item in item_list:
         post_item_response = session.post(item_api.format(mms_id=bib_mms, holding_id=target_hol_id), json=item)
-    else:
-        # TODO check response and write to report
-        print("Da ist etwas schief gelaufen.")

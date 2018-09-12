@@ -85,6 +85,7 @@
       import urllib.parse
       import xml.etree.ElementTree as ET
       import json
+      from time import sleep
       #+END_SRC
 
       - =sys.argv= :: um Kommandozeilenargumente entgegenzunehmen
@@ -350,7 +351,7 @@
 
           # check if the alternative call number is empty
           if alt_call_nr == "":
-              alt_call_nr = item["item_data"]["alternative_call_number"] = hol_call_nr
+              item["item_data"]["alternative_call_number"] = hol_call_nr
               item["item_data"]["alternative_call_number_type"]["value"] = 8
               item["item_data"]["alternative_call_number_type"]["desc"] = "Other scheme"
           else:
@@ -403,7 +404,7 @@
       3. Das Exemplar mit einem POST-request ans Zielholding hängen.
 
       Der erste Schritt, wird oben abgearbeitet, die beiden weiteren machen wir jetzt.
-******* Problem mit der API # 00580797
+******* Problem mit der API # 00580797                           :Salesforce:
 Dear Support Team,
 
 we need to move items from one holding to another via API. As I understand it, the way to go is to delete the item in one place and create it again by POSTing it at the target holding -- if there is a better/more efficient way, I'm glad to hear it.
@@ -459,21 +460,20 @@ Stefan
         post_item_response = session.post(item_api.format(mms_id=bib_mms, holding_id=target_hol_id), json=item)
       #+END_SRC
 
-      Falls der HTTP-Statuscode nicht 204 war, prüfen wir die Antwort und
-      schreiben sie in den Report.
 
-      #+NAME: move-item
+      #+NAME: move-items
       #+BEGIN_SRC python :noweb yes
         # TODO Still broken!
-        def move_item(item, target_hol_id):
-            """Move item to other holding and delete source-holding"""
-            <<delete-item>>
+        def move_items(item_list, target_hol_id):
+            """Move items to other holding and delete source-holding"""
+            for item in item_list:
+                <<delete-item>>
 
-            if delete_item_response.status_code == 204:
+            # sleep for some seconds to give alma time
+            sleep(5)
+
+            for item in item_list:
                 <<create-item>>
-            else:
-                # TODO check response and write to report
-                print("Da ist etwas schief gelaufen.")
       #+END_SRC
       
 *** Alles Zusammensetzen
@@ -493,6 +493,7 @@ Stefan
       <<configure-backup>>
       # function for backing up JSON to disk
       <<save-items>>
+      <<reset-testrecord>>
 
       # Get the users input
       <<MMS-IDs>>
@@ -505,7 +506,7 @@ Stefan
       <<change-item-information>>
 
       # Move the item to the target holding
-      <<move-item>>
+      <<move-items>>
       #+END_SRC
          
 *** Tests
@@ -562,6 +563,16 @@ Stefan
           assert change_item_information(item_no_alt)["item_data"]["alternative_call_number_type"]["desc"] == "Other scheme"
 
 
+    #+END_SRC
+
+*** Wiederherstellung des Ausgangszustands beim Testdatensatz
+    #+NAME: reset-testrecord
+    #+BEGIN_SRC python
+      backup = "tests/testdata/testitems.json"
+      with open(backup) as backup:
+          items = json.load(backup)
+          for item in items:
+              post_item_response = session.post(item_api.format(mms_id="9929806060303339", holding_id="22327292200003339"), json=item)
     #+END_SRC
 
 * API-Dokumentation
