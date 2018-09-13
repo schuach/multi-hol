@@ -96,12 +96,30 @@ with open(backup) as backup:
         post_item_response = session.post(item_api.format(mms_id="9929806060303339", holding_id="22327292200003339"), json=item)
 
 # Get the users input
-def get_mmsids():
+def get_mmsids(msg=""):
     """Return the MMS-IDs of the bibrecord and the target-holding."""
-    bib_mms, target_hol_id = multenterbox(msg="Bitte folgende Daten eingeben",
+
+    if msg == "":
+        msg =  "Bitte folgende Daten eingeben."
+    else:
+        msg = msg
+
+    bib_mms, target_hol_id = multenterbox(msg=msg,
                                            title="Multi-HOL-Bereinigung",
                                            fields=["MMS-ID des Bibsatzes", "MMS-ID des Zielholdings"])
-    return bib_mms, target_hol_id
+    # check the input
+    if (not bib_mms.startswith("99")
+            or not bib_mms.endswith("3339")
+            or not target_hol_id.startswith("22")):
+        msg = """*** Formaler Fehler in der Eingabe ***
+
+    1. Die MMS-ID des Bibsatzes muss mit "99" beginnen
+    2. Die MMS-ID des Bibsatzes muss mit "3339" enden
+    3. Die MMS-ID des HOL-Satzes muss mit "22" beginnen
+"""
+        get_mmsids(msg)
+    else:
+        return bib_mms, target_hol_id
 bib_mms, target_hol_id = get_mmsids()
 # Get the items
 def get_items(mms_id):
@@ -182,11 +200,11 @@ def move_items(item_list, target_hol_id):
     for item in item_list:
         post_item_response = session.post(item_api.format(mms_id=bib_mms, holding_id=target_hol_id), json=item)
 
+def main():
+    item_list = get_items(bib_mms)
+    print(len(item_list))
 
-item_list = get_items(bib_mms)
-print(len(item_list))
+    for item in item_list:
+        change_item_information(item)
 
-for item in item_list:
-    change_item_information(item)
-
-move_items(item_list, target_hol_id)
+        move_items(item_list, target_hol_id)

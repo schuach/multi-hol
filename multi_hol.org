@@ -150,6 +150,7 @@
       # get api key from system keyring
       api_key = keyring.get_password("ALMA-API", "BIB-Sandbox").rstrip()
       #+END_SRC
+      
 *** Verarbeitung      
 ***** TODO Feststellen, welche Datensätze bearbeitet werden sollen und ein paar Daten auslesen
       Um zu wissen, an welchen Datensätzen gearbeitet werden soll, muss die
@@ -162,12 +163,30 @@
       - [ ] Enden bib-mms und hol-mms auf 3339?
       #+NAME: MMS-IDs
       #+BEGIN_SRC python
-        def get_mmsids():
+        def get_mmsids(msg=""):
             """Return the MMS-IDs of the bibrecord and the target-holding."""
-            bib_mms, target_hol_id = multenterbox(msg="Bitte folgende Daten eingeben",
+
+            if msg == "":
+                msg =  "Bitte folgende Daten eingeben."
+            else:
+                msg = msg
+
+            bib_mms, target_hol_id = multenterbox(msg=msg,
                                                    title="Multi-HOL-Bereinigung",
                                                    fields=["MMS-ID des Bibsatzes", "MMS-ID des Zielholdings"])
-            return bib_mms, target_hol_id
+            # check the input
+            if (not bib_mms.startswith("99")
+                    or not bib_mms.endswith("3339")
+                    or not target_hol_id.startswith("22")):
+                msg = """*** Formaler Fehler in der Eingabe ***
+
+            1. Die MMS-ID des Bibsatzes muss mit "99" beginnen
+            2. Die MMS-ID des Bibsatzes muss mit "3339" enden
+            3. Die MMS-ID des HOL-Satzes muss mit "22" beginnen
+        """
+                get_mmsids(msg)
+            else:
+                return bib_mms, target_hol_id
       #+END_SRC
 
 ***** DONE Items holen
@@ -497,6 +516,7 @@ Stefan
       #+END_SRC
       
 *** Alles Zusammensetzen
+***** Das Modul
       #+BEGIN_SRC python :noweb yes :tangle multi_hol/multi_hol.py
         <<imports>>
 
@@ -527,14 +547,15 @@ Stefan
         # Move the item to the target holding
         <<move-items>>
 
+        def main():
+            item_list = get_items(bib_mms)
+            print(len(item_list))
 
-        item_list = get_items(bib_mms)
-        print(len(item_list))
+            for item in item_list:
+                change_item_information(item)
 
-        for item in item_list:
-            change_item_information(item)
+                move_items(item_list, target_hol_id)
 
-        move_items(item_list, target_hol_id)
       #+END_SRC
          
 *** Tests
