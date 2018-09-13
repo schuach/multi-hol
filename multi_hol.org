@@ -6,7 +6,7 @@
 #+DESCRIPTION:
 #+KEYWORDS:
 #+RST: .. status: draft
-#+OPTIONS: H:4 num:nil toc:nil ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS: H:4 num:nil toc:nil ::t |:t ^:nil -:t f:t *:t <:t
 #+OPTIONS: tex:t todo:t pri:nil tags:t texht:nil
 #+OPTIONS: author:nil creator:nil email:nil date:t
 #+EXPORT_FILE_NAME: ~/projects/alma-rm/pages/multi-hol.rst
@@ -79,6 +79,7 @@
       #+NAME: imports
       #+BEGIN_SRC python
       from sys import argv
+      import re
       import os
       import keyring
       from requests import Session
@@ -86,6 +87,7 @@
       import xml.etree.ElementTree as ET
       import json
       from time import sleep
+      from easygui import multenterbox
       #+END_SRC
 
       - =sys.argv= :: um Kommandozeilenargumente entgegenzunehmen
@@ -106,6 +108,10 @@
            JSON umzuwandeln.
       - =json= :: Wir bekommen von der Alma Item-Objekte als JSON. Mit dieser Bibliothek
                   lassen sich JSON-Daten gut manipulieren.
+      - =time.sleep= :: um zwischen Löschen am Quell- und Posten am Zielholding
+                        zu warten
+      - =easygui.multenterbox= :: um von der Benutzerin die MMS-ID von Bibsatz
+           und Zielholding zu bekommen
       
 ***** Voreinstellungen für die APIs
       Nachdem wir viele Calls machen werden, ist es wohl gut, die APIs in
@@ -156,9 +162,12 @@
       - [ ] Enden bib-mms und hol-mms auf 3339?
       #+NAME: MMS-IDs
       #+BEGIN_SRC python
-      def get_mmsids():
-          """Return the MMS-IDs of the bibrecord and the target-holding."""
-          pass
+        def get_mmsids():
+            """Return the MMS-IDs of the bibrecord and the target-holding."""
+            bib_mms, target_hol_id = multenterbox(msg="Bitte folgende Daten eingeben",
+                                                   title="Multi-HOL-Bereinigung",
+                                                   fields=["MMS-ID des Bibsatzes", "MMS-ID des Zielholdings"])
+            return bib_mms, target_hol_id
       #+END_SRC
 
 ***** DONE Items holen
@@ -180,6 +189,7 @@
         def get_items(mms_id):
             mms_id = mms_id
             outlist = []
+            hol_bch = get_bch(target_hol_id)
 
             # get the item-list from Alma
             item_list = session.get(item_api.format(mms_id=mms_id, holding_id="ALL"),
@@ -189,9 +199,10 @@
             if check_response_item(item_list) == "ok":
                 item_list = item_list.json()
 
-            # append the items to the list to be returned
+            # append the items to the list to be returned, if they pass the tests
             for item in item_list["item"]:
-                outlist.append(item)
+                if check_bch(item, hol_bch):
+                    outlist.append(item)
 
             # check if there are more than 100 items
             total_record_count = int(item_list["total_record_count"])
@@ -199,18 +210,19 @@
                 # calculate number of needed additional calls
                 add_calls = total_record_count // 100
 
-                # TODO make the additional calls and add answer to the outlist
+                # make the additional calls and add answer to the outlist
                 for i in range(add_calls):
                     offset = (i + 1) * 100
 
                     next_list = session.get(item_api.format(mms_id=mms_id, holding_id="ALL"),
                                             params={"limit": "100", "offset": offset}).json()
                     for item in next_list["item"]:
-                        outlist.append(item)
+                        if check_bch(item, hol_bch):
+                            outlist.append(item)
 
             # TODO save the item list to disk
-            backup_file = os.path.join(backup_dir, f"{mms_id}_items.json")
-            save_json(item, backup_file)
+            backup_file = os.path.join(backup_dir, f"{mms_id}_{hol_bch[0]}_{hol_bch[1]}_{hol_bch[2].replace('.', '').replace(',', '').replace('/', '').replace(' ', '-')}.json")
+            save_json(outlist, backup_file)
             return outlist
 
       #+END_SRC
@@ -265,13 +277,13 @@
 
               Take an item object (dict) and return True or False."""
 
-              hol_b = hol_bch[0]
-              hol_c = hol_bch[1]
-              hol_h = hol_bch[2]
+              hol_b, hol_c, hol_h = hol_bch
 
               item_b = item["item_data"]["library"]["value"]
               item_c = item["item_data"]["location"]["value"]
               item_h = item["holding_data"]["call_number"]
+              item_alt = item["item_data"]["alternative_call_number"]
+              item_h_from_alt = re.sub(r"^.* ; ", "", item_alt)
 
               bch_check = [False, False, False]
 
@@ -282,6 +294,10 @@
                   bch_check[1] = True
 
               if item_h.startswith(hol_h):
+                  bch_check[2] = True
+              elif item_h_from_alt.startswith(hol_h):
+                  # if the item has already been moved to a false holding because the false
+                  # call number is a substring of the right one
                   bch_check[2] = True
 
               if False in bch_check:
@@ -450,7 +466,11 @@ Stefan
 
       #+NAME: delete-item
       #+BEGIN_SRC python
-        delete_item_response = session.delete(item["link"], params={"holdings": "delete"})
+        # delete the items, but prevent the target-hol from being deleted
+        if not target_hol_id in item["link"]:
+            delete_item_response = session.delete(item["link"], params={"holdings": "delete"})
+        else:
+            delete_item_response = session.delete(item["link"], params={"holdings": "retain"})
       #+END_SRC
       
       Die API sollte bei Erfolg HTTP 204 zurückgeben. Wenn das Löschen geklappt
@@ -478,35 +498,43 @@ Stefan
       
 *** Alles Zusammensetzen
       #+BEGIN_SRC python :noweb yes :tangle multi_hol/multi_hol.py
-      <<imports>>
+        <<imports>>
 
-      # get everything ready for making the API-Calls
-      <<api-strings>>
-      <<API-key>>
-      <<session>>
+        # get everything ready for making the API-Calls
+        <<api-strings>>
+        <<API-key>>
+        <<session>>
 
-      # functions for checking the api-responses
-      <<check-api-res-funcs>>
-      <<content-checks>>
+        # functions for checking the api-responses
+        <<check-api-res-funcs>>
+        <<content-checks>>
 
-      # set up the backup
-      <<configure-backup>>
-      # function for backing up JSON to disk
-      <<save-items>>
-      <<reset-testrecord>>
+        # set up the backup
+        <<configure-backup>>
+        # function for backing up JSON to disk
+        <<save-items>>
+        <<reset-testrecord>>
 
-      # Get the users input
-      <<MMS-IDs>>
-      bib_mms = ""
-      target_hol_id = ""
-      # Get the items
-      <<API-get-items>>
+        # Get the users input
+        <<MMS-IDs>>
+        bib_mms, target_hol_id = get_mmsids()
+        # Get the items
+        <<API-get-items>>
 
-      # Change item information like call numbers etc.
-      <<change-item-information>>
+        # Change item information like call numbers etc.
+        <<change-item-information>>
 
-      # Move the item to the target holding
-      <<move-items>>
+        # Move the item to the target holding
+        <<move-items>>
+
+
+        item_list = get_items(bib_mms)
+        print(len(item_list))
+
+        for item in item_list:
+            change_item_information(item)
+
+        move_items(item_list, target_hol_id)
       #+END_SRC
          
 *** Tests

@@ -1,4 +1,5 @@
 from sys import argv
+import re
 import os
 import keyring
 from requests import Session
@@ -6,6 +7,7 @@ import urllib.parse
 import xml.etree.ElementTree as ET
 import json
 from time import sleep
+from easygui import multenterbox
 
 # get everything ready for making the API-Calls
 # api-url-templates
@@ -41,13 +43,13 @@ def check_bch(item, hol_bch):
 
     Take an item object (dict) and return True or False."""
 
-    hol_b = hol_bch[0]
-    hol_c = hol_bch[1]
-    hol_h = hol_bch[2]
+    hol_b, hol_c, hol_h = hol_bch
 
     item_b = item["item_data"]["library"]["value"]
     item_c = item["item_data"]["location"]["value"]
     item_h = item["holding_data"]["call_number"]
+    item_alt = item["item_data"]["alternative_call_number"]
+    item_h_from_alt = re.sub(r"^.* ; ", "", item_alt)
 
     bch_check = [False, False, False]
 
@@ -58,6 +60,10 @@ def check_bch(item, hol_bch):
         bch_check[1] = True
 
     if item_h.startswith(hol_h):
+        bch_check[2] = True
+    elif item_h_from_alt.startswith(hol_h):
+        # if the item has already been moved to a false holding because the false
+        # call number is a substring of the right one
         bch_check[2] = True
 
     if False in bch_check:
@@ -92,13 +98,16 @@ with open(backup) as backup:
 # Get the users input
 def get_mmsids():
     """Return the MMS-IDs of the bibrecord and the target-holding."""
-    pass
-bib_mms = ""
-target_hol_id = ""
+    bib_mms, target_hol_id = multenterbox(msg="Bitte folgende Daten eingeben",
+                                           title="Multi-HOL-Bereinigung",
+                                           fields=["MMS-ID des Bibsatzes", "MMS-ID des Zielholdings"])
+    return bib_mms, target_hol_id
+bib_mms, target_hol_id = get_mmsids()
 # Get the items
 def get_items(mms_id):
     mms_id = mms_id
     outlist = []
+    hol_bch = get_bch(target_hol_id)
 
     # get the item-list from Alma
     item_list = session.get(item_api.format(mms_id=mms_id, holding_id="ALL"),
@@ -108,9 +117,10 @@ def get_items(mms_id):
     if check_response_item(item_list) == "ok":
         item_list = item_list.json()
 
-    # append the items to the list to be returned
+    # append the items to the list to be returned, if they pass the tests
     for item in item_list["item"]:
-        outlist.append(item)
+        if check_bch(item, hol_bch):
+            outlist.append(item)
 
     # check if there are more than 100 items
     total_record_count = int(item_list["total_record_count"])
@@ -118,18 +128,19 @@ def get_items(mms_id):
         # calculate number of needed additional calls
         add_calls = total_record_count // 100
 
-        # TODO make the additional calls and add answer to the outlist
+        # make the additional calls and add answer to the outlist
         for i in range(add_calls):
             offset = (i + 1) * 100
 
             next_list = session.get(item_api.format(mms_id=mms_id, holding_id="ALL"),
                                     params={"limit": "100", "offset": offset}).json()
             for item in next_list["item"]:
-                outlist.append(item)
+                if check_bch(item, hol_bch):
+                    outlist.append(item)
 
     # TODO save the item list to disk
-    backup_file = os.path.join(backup_dir, f"{mms_id}_items.json")
-    save_json(item, backup_file)
+    backup_file = os.path.join(backup_dir, f"{mms_id}_{hol_bch[0]}_{hol_bch[1]}_{hol_bch[2].replace('.', '').replace(',', '').replace('/', '').replace(' ', '-')}.json")
+    save_json(outlist, backup_file)
     return outlist
 
 
@@ -159,10 +170,23 @@ def change_item_information(item):
 def move_items(item_list, target_hol_id):
     """Move items to other holding and delete source-holding"""
     for item in item_list:
-        delete_item_response = session.delete(item["link"], params={"holdings": "delete"})
+        # delete the items, but prevent the target-hol from being deleted
+        if not target_hol_id in item["link"]:
+            delete_item_response = session.delete(item["link"], params={"holdings": "delete"})
+        else:
+            delete_item_response = session.delete(item["link"], params={"holdings": "retain"})
 
     # sleep for some seconds to give alma time
     sleep(5)
 
     for item in item_list:
         post_item_response = session.post(item_api.format(mms_id=bib_mms, holding_id=target_hol_id), json=item)
+
+
+item_list = get_items(bib_mms)
+print(len(item_list))
+
+for item in item_list:
+    change_item_information(item)
+
+move_items(item_list, target_hol_id)
