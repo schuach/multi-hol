@@ -89,11 +89,12 @@ def save_json(json_list, filename):
             # TODO log error/display message and quit()
             print("!!! Backup konnte nicht geschrieben werden.\n!!! Verarbeitung wird abgebrochen")
             return 1
-backup = "tests/testdata/testitems.json"
-with open(backup) as backup:
-    items = json.load(backup)
-    for item in items:
-        post_item_response = session.post(item_api.format(mms_id="9929806060303339", holding_id="22327292200003339"), json=item)
+def reset_testrecord():
+    backup = "tests/testdata/testitems.json"
+    with open(backup) as backup:
+        items = json.load(backup)
+        for item in items:
+            post_item_response = session.post(item_api.format(mms_id="9929806060303339", holding_id="22327292200003339"), json=item)
 
 # Get the users input
 def get_mmsids(msg=""):

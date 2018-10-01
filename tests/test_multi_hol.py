@@ -38,3 +38,10 @@ def test_change_item_info():
     assert change_item_information(item_no_alt)["item_data"]["alternative_call_number"] == "I 380010/48"
     assert change_item_information(item_no_alt)["item_data"]["alternative_call_number_type"]["value"] == 8
     assert change_item_information(item_no_alt)["item_data"]["alternative_call_number_type"]["desc"] == "Other scheme"
+
+def reset_testrecord():
+    backup = "tests/testdata/testitems.json"
+    with open(backup) as backup:
+        items = json.load(backup)
+        for item in items:
+            post_item_response = session.post(item_api.format(mms_id="9929806060303339", holding_id="22327292200003339"), json=item)
