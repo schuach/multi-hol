@@ -152,15 +152,19 @@
       #+END_SRC
       
 *** Verarbeitung      
-***** TODO Feststellen, welche Datensätze bearbeitet werden sollen und ein paar Daten auslesen
+***** DONE Feststellen, welche Datensätze bearbeitet werden sollen und ein paar Daten auslesen
+      CLOSED: [2018-12-10 Mo 16:44]
+      :LOGBOOK:
+      - State "DONE"       from "TODO"       [2018-12-10 Mo 16:44]
+      :END:
       Um zu wissen, an welchen Datensätzen gearbeitet werden soll, muss die
       Bearbeiterin die MMS-IDs vom Bibsatz und dem Zielolding eingeben.
 
       Nachdem Whitespace vorne und hinten entfern wurde, sollte folgendes
       überprüft werden:
-      - [ ] Beginnt die bib-mms mit 99?
-      - [ ] Beginnt die hol-mms mit 99?
-      - [ ] Enden bib-mms und hol-mms auf 3339?
+      - [X] Beginnt die bib-mms mit 99?
+      - [X] Beginnt die hol-mms mit 22?
+      - [X] Endet die bib-mms auf 3339?
       #+NAME: MMS-IDs
       #+BEGIN_SRC python
         def get_mmsids(msg=""):
@@ -502,7 +506,7 @@ Stefan
 
       #+NAME: move-items
       #+BEGIN_SRC python :noweb yes
-        # TODO Still broken!
+        # TODO Umbauen, so wie in Signaturänderung BMI
         def move_items(item_list, target_hol_id):
             """Move items to other holding and delete source-holding"""
             for item in item_list:
