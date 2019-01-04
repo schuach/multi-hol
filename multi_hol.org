@@ -9,7 +9,7 @@
 #+OPTIONS: H:4 num:nil toc:nil ::t |:t ^:nil -:t f:t *:t <:t
 #+OPTIONS: tex:t todo:t pri:nil tags:t texht:nil
 #+OPTIONS: author:nil creator:nil email:nil date:t
-#+EXPORT_FILE_NAME: ~/projects/alma-rm/pages/multi-hol.rst
+#+EXPORT_FILE_NAME: ~/Schreibtisch/multi-hol.rst
 
 
 * Ausgangslage und Ziel
@@ -54,6 +54,8 @@
           müssen.
       - Für das Programm
         - Sind Bestellungen mit einem der vorhandenen HOLs verknüpft?
+        - Verschiedene Grundsignaturen können mit demselben String anfangen: =I
+          123/1= und =I 123/N.F.,1=
 
 * Skript
 
@@ -78,10 +80,11 @@
 
       #+NAME: imports
       #+BEGIN_SRC python
-      from sys import argv
+      import sys
       import re
       import os
       import keyring
+      import datetime
       from requests import Session
       import urllib.parse
       import xml.etree.ElementTree as ET
@@ -90,7 +93,8 @@
       from easygui import multenterbox
       #+END_SRC
 
-      - =sys.argv= :: um Kommandozeilenargumente entgegenzunehmen
+      - =sys= :: um Kommandozeilenargumente entgegenzunehmen (=sys.argv=) oder
+                 die Ausführung abzubrechen (=sys.exit=)
       - =os= :: Verzeichnisse anlegen, Dateien löschen, etc.
       - =keyring= :: dient dazu, den API-Key aus dem System-Keyring zu lesen. Für die
                      Distribution ist das natürlich nicht brauchbar. Im Endeffekt wird man hier
@@ -209,7 +213,7 @@
 
       #+NAME: API-get-items
       #+BEGIN_SRC python
-        def get_items(mms_id):
+        def get_items(mms_id, target_hol_id):
             mms_id = mms_id
             outlist = []
             hol_bch = get_bch(target_hol_id)
@@ -221,6 +225,9 @@
             # TODO check response
             if check_response_item(item_list) == "ok":
                 item_list = item_list.json()
+            else:
+                print("Fehler beim Holen der Daten:")
+                print(item_list.text)
 
             # append the items to the list to be returned, if they pass the tests
             for item in item_list["item"]:
@@ -258,7 +265,8 @@
         #+NAME: check-item-api-response
         #+BEGIN_SRC python
           def check_response_item(response):
-              return "ok"
+              if response.status_code == 200:
+                  return "ok"
         #+END_SRC
 
 ********* Code für API-Checks zusammensetzen                       :noexport:
@@ -271,7 +279,11 @@
           <<check-item-api-response>>
           #+END_SRC
 
-******* TODO Inhaltliche Checks
+******* DONE Inhaltliche Checks
+        CLOSED: [2019-01-04 Fr 09:43]
+        :LOGBOOK:
+        - State "DONE"       from "TODO"       [2019-01-04 Fr 09:43]
+        :END:
         Überprüfung, ob die richtigen Signaturen vorhanden sind, etc. Dazu holen
         wir uns zuerst das Zielholding und lesen dort =856 b=, =c= und =h= aus.
         
@@ -287,9 +299,11 @@
               return b, c, h
         #+END_SRC
 
-        Dann schauen wir, ob das Item zum HOL passt. Subfelder =b= und =c=
-        müssen übereinstimmen; die Signatur des Items (genaugenommen von dessen
-        HOL) muss mit demselben String anfangen, der in Subfeld =h= steht.
+        Dann schauen wir, ob das Item zum HOL passt, damit nicht
+        falschlicherweise Items von anderen Standorten oder mit anderen
+        Grundsignaturen umgehängt werden. Subfelder =b= und =c= müssen
+        übereinstimmen; die Signatur des Items (genaugenommen von dessen HOL)
+        muss mit demselben String anfangen, der in Subfeld =h= steht.
 
         #+NAME: check-bch
         #+BEGIN_SRC python
@@ -335,8 +349,12 @@
             <<get-bch>>
             <<check-bch>>
           #+END_SRC
-***** TODO Sicherungen machen
-******* TODO Das Sicherungsverzeichnis festlegen
+***** DONE Sicherungen machen
+      CLOSED: [2019-01-04 Fr 10:58]
+      :LOGBOOK:
+      - State "DONE"       from "TODO"       [2019-01-04 Fr 10:58]
+      :END:
+******* DONE Das Sicherungsverzeichnis festlegen
         Hier legen wir das Verzeichnis fest, in das die Sicherungen und reports
         kommen. Falls es nicht vorhanden ist, erstellen wir es.
         
@@ -348,7 +366,11 @@
               os.makedirs(backup_dir)
         #+END_SRC
 
-******* TODO Items
+******* DONE Items
+        CLOSED: [2019-01-04 Fr 10:58]
+        :LOGBOOK:
+        - State "DONE"       from "TODO"       [2019-01-04 Fr 10:58]
+        :END:
         Nachdem wir ja von =get_items()= eine Liste mit Item-Objekten
         zurückbekommen, schreiben wir diese einfach in eine Datei.
 
@@ -359,13 +381,14 @@
 
               Takes a list of JSON-objects."""
 
-              with open(filename, "w") as backup:
-                  try:
+              try:
+                  with open(filename, "x") as backup:
                       backup.write(json.dumps(json_list))
-                  except:
-                      # TODO log error/display message and quit()
-                      print("!!! Backup konnte nicht geschrieben werden.\n!!! Verarbeitung wird abgebrochen")
-                      return 1
+              except FileExistsError:
+                  # TODO log error/display message and quit()
+                  print("!!! Backup Datei existiert bereits. Backup kann nicht geschrieben werden.\n!!! Verarbeitung wird abgebrochen")
+                  input("Drücken sie ENTER um zu beenden.")
+                  sys.exit(1)
         #+END_SRC
         
 ***** DONE Änderungen an den Items machen
@@ -425,7 +448,11 @@
               <<clear-item-policy>>
               return item
         #+END_SRC
-***** TODO Items umhängen und Holdings löschen
+***** DONE Items umhängen und Holdings löschen
+      CLOSED: [2019-01-04 Fr 09:39]
+      :LOGBOOK:
+      - State "DONE"       from "TODO"       [2019-01-04 Fr 09:39]
+      :END:
       Das Umhängen des Exemplars sollte der letzte Schritt sein. Vorher sollten
       alle Checks laufen und das Item entsprechend angepasst werden (z. B. die
       HOL-Signatur in die =alternative_call_number= schreiben).
@@ -442,8 +469,52 @@
          "holdings=delete", um das Holding gleich mit zu löschen.
       3. Das Exemplar mit einem POST-request ans Zielholding hängen.
 
-      Der erste Schritt, wird oben abgearbeitet, die beiden weiteren machen wir jetzt.
-******* Problem mit der API # 00580797                           :Salesforce:
+      Der erste Schritt, wird oben abgearbeitet, die beiden weiteren werden in
+      der Funktion =move_item()= abgehandelt:
+
+      #+NAME: move-item
+      #+BEGIN_SRC python :noweb yes
+        def move_item(item, bib_mms, target_hol_id):
+            """Move items to other holding and delete source-holding"""
+            # delete the items, but prevent the target-hol from being deleted
+            barcode = item["item_data"]["barcode"]
+            title = item["bib_data"]["title"]
+            target = item_api.format(mms_id=bib_mms, holding_id=target_hol_id)
+            if not target_hol_id in item["link"]:
+                delete_item_response = session.delete(item["link"], params={"holdings": "delete"})
+            else:
+                delete_item_response = session.delete(item["link"], params={"holdings": "retain"})
+
+            if not delete_item_response.status_code == 204:
+                print("Deletion failed")
+                print([bib_mms, barcode, title, delete_item_response.text])
+                return
+
+            # post the item. Wait for 1 second before that, so that Alma can update the
+            # barcode index. Try again, if barcode index is not updated.
+            sleep(1)
+            tries = 0
+            post_item_response = session.post(target, json=item).json()
+            while "errorsExist" in post_item_response:
+                if tries > 5:
+                    error = post_item_response["errorList"]["error"][0]["errorMessage"]
+                    # errors.append([bib_mms, barcode, title, error])
+                    print(f"    Fifth try failed, giving up.")
+                    break
+                elif post_item_response["errorList"]["error"][0]["errorCode"] == "401873":
+                    # if the error is an existing barcode, try again
+                    print(f"    Trying again ({tries + 1}x)")
+                    sleep(1)
+                    post_item_response = session.post(target, json=item).json()
+                    tries += 1
+                else:
+                    error = post_item_response["errorList"]["error"][0]["errorMessage"]
+                    # errors.append([bib_mms, barcode, title, error])
+                    print(f"    Unexpected error: {error}")
+                    break
+      #+END_SRC
+
+******* Problem mit der API # 00580797                  :Salesforce:noexport:
 Dear Support Team,
 
 we need to move items from one holding to another via API. As I understand it, the way to go is to delete the item in one place and create it again by POSTing it at the target holding -- if there is a better/more efficient way, I'm glad to hear it.
@@ -483,41 +554,6 @@ If there's an easyer way to move items from one holding to another, I'm happy to
 
 Best regards
 Stefan
-***** TODO Das Exemplar löschen und kontrollieren, ob es funktioniert hat
-      Zuerst müssen wir das Exemplar löschen. Weil wir das Hol auch nicht mehr
-      brauchen, löschen wir es gleich mit, sofern es sich ums letzte Exemplar handelt.
-
-      #+NAME: delete-item
-      #+BEGIN_SRC python
-        # delete the items, but prevent the target-hol from being deleted
-        if not target_hol_id in item["link"]:
-            delete_item_response = session.delete(item["link"], params={"holdings": "delete"})
-        else:
-            delete_item_response = session.delete(item["link"], params={"holdings": "retain"})
-      #+END_SRC
-      
-      Die API sollte bei Erfolg HTTP 204 zurückgeben. Wenn das Löschen geklappt
-      hat, hängen wir das item ans Zielholding.
-      #+NAME: create-item
-      #+BEGIN_SRC python
-        post_item_response = session.post(item_api.format(mms_id=bib_mms, holding_id=target_hol_id), json=item)
-      #+END_SRC
-
-
-      #+NAME: move-items
-      #+BEGIN_SRC python :noweb yes
-        # TODO Umbauen, so wie in Signaturänderung BMI
-        def move_items(item_list, target_hol_id):
-            """Move items to other holding and delete source-holding"""
-            for item in item_list:
-                <<delete-item>>
-
-            # sleep for some seconds to give alma time
-            sleep(5)
-
-            for item in item_list:
-                <<create-item>>
-      #+END_SRC
       
 *** Alles Zusammensetzen
 ***** Das Modul
@@ -529,19 +565,17 @@ Stefan
         <<API-key>>
         <<session>>
 
-        # functions for checking the api-responses
-        <<check-api-res-funcs>>
-        <<content-checks>>
-
         # set up the backup
         <<configure-backup>>
         # function for backing up JSON to disk
         <<save-items>>
-        <<reset-testrecord>>
+
+        # functions for checking the api-responses
+        <<check-api-res-funcs>>
+        <<content-checks>>
 
         # Get the users input
         <<MMS-IDs>>
-        bib_mms, target_hol_id = get_mmsids()
         # Get the items
         <<API-get-items>>
 
@@ -549,17 +583,26 @@ Stefan
         <<change-item-information>>
 
         # Move the item to the target holding
-        <<move-items>>
+        <<move-item>>
 
-        def main():
-            item_list = get_items(bib_mms)
-            print(len(item_list))
+        def main(bib_mms=None, target_hol_id=None):
+            if bib_mms is None or target_hol_id is None:
+                bib_mms, target_hol_id = get_mmsids()
 
-            for item in item_list:
+            print("Hole Daten von Alma ...")
+            item_list = get_items(bib_mms, target_hol_id)
+            item_count = len(item_list)
+            print(f"Zu bearbeitende Exemplare: {item_count}")
+
+            print("Verarbeitung ...\n")
+            for idx, item in enumerate(item_list):
+                print(f"Exemplar {idx} von {item_count}: {item['item_data']['barcode']}")
+                print("  Bearbeite Exemplardaten ...")
                 change_item_information(item)
 
-                move_items(item_list, target_hol_id)
-
+                # richtigen Aufruf schreiben
+                print("  Verschieben an Zielholding ...")
+                move_item(item, bib_mms, target_hol_id)
       #+END_SRC
          
 *** Tests
@@ -616,17 +659,6 @@ Stefan
           assert change_item_information(item_no_alt)["item_data"]["alternative_call_number_type"]["desc"] == "Other scheme"
 
 
-    #+END_SRC
-
-*** Wiederherstellung des Ausgangszustands beim Testdatensatz
-    #+NAME: reset-testrecord
-    #+BEGIN_SRC python
-      def reset_testrecord():
-          backup = "tests/testdata/testitems.json"
-          with open(backup) as backup:
-              items = json.load(backup)
-              for item in items:
-                  post_item_response = session.post(item_api.format(mms_id="9929806060303339", holding_id="22327292200003339"), json=item)
     #+END_SRC
 
 * API-Dokumentation

@@ -1,7 +1,8 @@
-from sys import argv
+import sys
 import re
 import os
 import keyring
+import datetime
 from requests import Session
 import urllib.parse
 import xml.etree.ElementTree as ET
@@ -25,9 +26,30 @@ session.headers.update({
     "authorization": f"apikey {api_key}"
 })
 
+# set up the backup
+backup_dir = os.path.join(os.path.expanduser("~"), "Dokumente", "ALMA_multi-hol")
+# make the directory if it does not exist
+if not os.path.exists(backup_dir):
+    os.makedirs(backup_dir)
+# function for backing up JSON to disk
+def save_json(json_list, filename):
+    """Save JSON-file with a list of items to disk.
+
+    Takes a list of JSON-objects."""
+
+    try:
+        with open(filename, "x") as backup:
+            backup.write(json.dumps(json_list))
+    except FileExistsError:
+        # TODO log error/display message and quit()
+        print("!!! Backup Datei existiert bereits. Backup kann nicht geschrieben werden.\n!!! Verarbeitung wird abgebrochen")
+        input("Drücken sie ENTER um zu beenden.")
+        sys.exit(1)
+
 # functions for checking the api-responses
 def check_response_item(response):
-    return "ok"
+    if response.status_code == 200:
+        return "ok"
 def get_bch(holding_id):
     hol = session.get(holdings_api + "/" + holding_id, headers = {"accept": "application/xml"})
     holxml = ET.fromstring(hol.text)
@@ -71,31 +93,6 @@ def check_bch(item, hol_bch):
     else:
         return True
 
-# set up the backup
-backup_dir = os.path.join(os.path.expanduser("~"), "Dokumente", "ALMA_multi-hol")
-# make the directory if it does not exist
-if not os.path.exists(backup_dir):
-    os.makedirs(backup_dir)
-# function for backing up JSON to disk
-def save_json(json_list, filename):
-    """Save JSON-file with a list of items to disk.
-
-    Takes a list of JSON-objects."""
-
-    with open(filename, "w") as backup:
-        try:
-            backup.write(json.dumps(json_list))
-        except:
-            # TODO log error/display message and quit()
-            print("!!! Backup konnte nicht geschrieben werden.\n!!! Verarbeitung wird abgebrochen")
-            return 1
-def reset_testrecord():
-    backup = "tests/testdata/testitems.json"
-    with open(backup) as backup:
-        items = json.load(backup)
-        for item in items:
-            post_item_response = session.post(item_api.format(mms_id="9929806060303339", holding_id="22327292200003339"), json=item)
-
 # Get the users input
 def get_mmsids(msg=""):
     """Return the MMS-IDs of the bibrecord and the target-holding."""
@@ -121,9 +118,8 @@ def get_mmsids(msg=""):
         get_mmsids(msg)
     else:
         return bib_mms, target_hol_id
-bib_mms, target_hol_id = get_mmsids()
 # Get the items
-def get_items(mms_id):
+def get_items(mms_id, target_hol_id):
     mms_id = mms_id
     outlist = []
     hol_bch = get_bch(target_hol_id)
@@ -135,6 +131,9 @@ def get_items(mms_id):
     # TODO check response
     if check_response_item(item_list) == "ok":
         item_list = item_list.json()
+    else:
+        print("Fehler beim Holen der Daten:")
+        print(item_list.text)
 
     # append the items to the list to be returned, if they pass the tests
     for item in item_list["item"]:
@@ -185,27 +184,60 @@ def change_item_information(item):
     return item
 
 # Move the item to the target holding
-# TODO Still broken!
-def move_items(item_list, target_hol_id):
+def move_item(item, bib_mms, target_hol_id):
     """Move items to other holding and delete source-holding"""
-    for item in item_list:
-        # delete the items, but prevent the target-hol from being deleted
-        if not target_hol_id in item["link"]:
-            delete_item_response = session.delete(item["link"], params={"holdings": "delete"})
+    # delete the items, but prevent the target-hol from being deleted
+    barcode = item["item_data"]["barcode"]
+    title = item["bib_data"]["title"]
+    target = item_api.format(mms_id=bib_mms, holding_id=target_hol_id)
+    if not target_hol_id in item["link"]:
+        delete_item_response = session.delete(item["link"], params={"holdings": "delete"})
+    else:
+        delete_item_response = session.delete(item["link"], params={"holdings": "retain"})
+
+    if not delete_item_response.status_code == 204:
+        print("Deletion failed")
+        print([bib_mms, barcode, title, delete_item_response.text])
+        return
+
+    # post the item. Wait for 1 second before that, so that Alma can update the
+    # barcode index. Try again, if barcode index is not updated.
+    sleep(1)
+    tries = 0
+    post_item_response = session.post(target, json=item).json()
+    while "errorsExist" in post_item_response:
+        if tries > 5:
+            error = post_item_response["errorList"]["error"][0]["errorMessage"]
+            # errors.append([bib_mms, barcode, title, error])
+            print(f"    Fifth try failed, giving up.")
+            break
+        elif post_item_response["errorList"]["error"][0]["errorCode"] == "401873":
+            # if the error is an existing barcode, try again
+            print(f"    Trying again ({tries + 1}x)")
+            sleep(1)
+            post_item_response = session.post(target, json=item).json()
+            tries += 1
         else:
-            delete_item_response = session.delete(item["link"], params={"holdings": "retain"})
+            error = post_item_response["errorList"]["error"][0]["errorMessage"]
+            # errors.append([bib_mms, barcode, title, error])
+            print(f"    Unexpected error: {error}")
+            break
 
-    # sleep for some seconds to give alma time
-    sleep(5)
+def main(bib_mms=None, target_hol_id=None):
+    if bib_mms is None or target_hol_id is None:
+        bib_mms, target_hol_id = get_mmsids()
 
-    for item in item_list:
-        post_item_response = session.post(item_api.format(mms_id=bib_mms, holding_id=target_hol_id), json=item)
+    print("Hole Daten von Alma ...")
+    item_list = get_items(bib_mms, target_hol_id)
+    item_count = len(item_list)
+    print(f"Zu bearbeitende Exemplare: {item_count}")
 
-def main():
-    item_list = get_items(bib_mms)
-    print(len(item_list))
-
-    for item in item_list:
+    print("Verarbeitung ...\n")
+    for idx, item in enumerate(item_list):
+        print(f"Exemplar {idx} von {item_count}: {item['item_data']['barcode']}")
+        print("  Bearbeite Exemplardaten ...")
         change_item_information(item)
 
-        move_items(item_list, target_hol_id)
+        # richtigen Aufruf schreiben
+        print("  Verschieben an Zielholding ...")
+        move_item(item, bib_mms, target_hol_id)
