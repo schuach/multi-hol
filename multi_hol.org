@@ -91,6 +91,7 @@
       import json
       from time import sleep
       from easygui import multenterbox
+      import logging
       #+END_SRC
 
       - =sys= :: um Kommandozeilenargumente entgegenzunehmen (=sys.argv=) oder
@@ -116,6 +117,39 @@
                         zu warten
       - =easygui.multenterbox= :: um von der Benutzerin die MMS-ID von Bibsatz
            und Zielholding zu bekommen
+      - =logging= :: um zu loggen
+      
+***** DONE Logging
+      CLOSED: [2019-01-04 Fr 13:58]
+      :LOGBOOK:
+      - State "DONE"       from "TODO"       [2019-01-04 Fr 13:58]
+      :END:
+      Falls etwas danebengeht, wollen wir genau wissen, was passiert ist. Daher
+      loggen wir alles mit, was passiert. Fast alles -- nachdem wir für den
+      Dateinamen die MMS-IDs brauchen holen wir uns selbige schon, bevor wir den
+      logger konfigurieren ([[MMS-IDs]]).
+      
+      #+NAME: logging-conf
+      #+begin_src python
+        now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        log_file = os.path.join(backup_dir, f"{bib_mms}_{target_hol_id}_{now}.log")
+        logger = logging.getLogger(__name__)
+        logger.setLevel(logging.DEBUG)
+        logger.propagate = False
+
+        # add handlers
+        log_stream_handler = logging.StreamHandler(sys.stdout)
+        log_stream_handler.setLevel(logging.INFO)
+        log_stream_handler.setFormatter(
+            logging.Formatter('%(levelname)s: %(message)s'))
+        logger.addHandler(log_stream_handler)
+
+        log_file_handler = logging.FileHandler(log_file)
+        log_file_handler.setLevel(logging.DEBUG)
+        log_file_handler.setFormatter(
+            logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+        logger.addHandler(log_file_handler)
+      #+end_src
       
 ***** Voreinstellungen für die APIs
       Nachdem wir viele Calls machen werden, ist es wohl gut, die APIs in
@@ -195,6 +229,13 @@
                 get_mmsids(msg)
             else:
                 return bib_mms, target_hol_id
+
+        # assign values to bib_mms and target_hol_id
+        if len(sys.argv) == 3:
+            bib_mms = sys.argv[1]
+            target_hol_id = sys.argv[2]
+        else:
+            bib_mms, target_hol_id = get_mmsids()
       #+END_SRC
 
 ***** DONE Items holen
@@ -226,10 +267,12 @@
             if check_response_item(item_list) == "ok":
                 item_list = item_list.json()
             else:
-                print("Fehler beim Holen der Daten:")
-                print(item_list.text)
+                logger.error(f"Fehler beim Holen der Daten: {item_list.text}")
+                input("Drücken Sie ENTER um das Programm zu beenden.")
+                sys.exit(1)
 
             # append the items to the list to be returned, if they pass the tests
+            logger.debug("get_items(): Items zur outlist hinzufügen")
             for item in item_list["item"]:
                 if check_bch(item, hol_bch):
                     outlist.append(item)
@@ -239,22 +282,24 @@
             if total_record_count > 100:
                 # calculate number of needed additional calls
                 add_calls = total_record_count // 100
-
+                logger.debug(f"get_items(): {total_record_count} items vorhanden, {add_calls} weitere API-calls notwendig.")
                 # make the additional calls and add answer to the outlist
                 for i in range(add_calls):
                     offset = (i + 1) * 100
+                    logger.debug(f"get_items(): additional call {offset}")
 
                     next_list = session.get(item_api.format(mms_id=mms_id, holding_id="ALL"),
                                             params={"limit": "100", "offset": offset}).json()
+                    logger.debug(f"get_items(): weitere items zu outlist hinzufügen (call {offset}/{add_calls})")
                     for item in next_list["item"]:
                         if check_bch(item, hol_bch):
                             outlist.append(item)
 
-            # TODO save the item list to disk
+            # DONE save the item list to disk
+            logger.info("Schreibe Backup.")
             backup_file = os.path.join(backup_dir, f"{mms_id}_{hol_bch[0]}_{hol_bch[1]}_{hol_bch[2].replace('.', '').replace(',', '').replace('/', '').replace(' ', '-')}.json")
             save_json(outlist, backup_file)
             return outlist
-
       #+END_SRC
 
 ***** TODO Checks machen
@@ -386,8 +431,8 @@
                       backup.write(json.dumps(json_list))
               except FileExistsError:
                   # TODO log error/display message and quit()
-                  print("!!! Backup Datei existiert bereits. Backup kann nicht geschrieben werden.\n!!! Verarbeitung wird abgebrochen")
-                  input("Drücken sie ENTER um zu beenden.")
+                  logger.error("Backup Datei existiert bereits. Backup kann nicht geschrieben werden. Verarbeitung wird abgebrochen.")
+                  input("\nDrücken sie ENTER um zu beenden.")
                   sys.exit(1)
         #+END_SRC
         
@@ -481,36 +526,37 @@
             title = item["bib_data"]["title"]
             target = item_api.format(mms_id=bib_mms, holding_id=target_hol_id)
             if not target_hol_id in item["link"]:
+                logger.debug(f"move_item(): lösche {barcode}")
                 delete_item_response = session.delete(item["link"], params={"holdings": "delete"})
             else:
+                logger.debug(f"move_item(): lösche {barcode}")
                 delete_item_response = session.delete(item["link"], params={"holdings": "retain"})
 
             if not delete_item_response.status_code == 204:
-                print("Deletion failed")
-                print([bib_mms, barcode, title, delete_item_response.text])
+                logger.error(f"move_item(): löschen fehlgeschlagen bei {barcode}. {delete_item_response.text}")
                 return
 
             # post the item. Wait for 1 second before that, so that Alma can update the
             # barcode index. Try again, if barcode index is not updated.
             sleep(1)
             tries = 0
+            logger.debug(f"move_item(): POST von {barcode}")
             post_item_response = session.post(target, json=item).json()
             while "errorsExist" in post_item_response:
                 if tries > 5:
                     error = post_item_response["errorList"]["error"][0]["errorMessage"]
                     # errors.append([bib_mms, barcode, title, error])
-                    print(f"    Fifth try failed, giving up.")
+                    logger.error(f"move_item(): {barcode} Fünfter POST-Versuch fehlgeschlagen, Abbruch.")
                     break
                 elif post_item_response["errorList"]["error"][0]["errorCode"] == "401873":
                     # if the error is an existing barcode, try again
-                    print(f"    Trying again ({tries + 1}x)")
+                    logger.info(f"move_item(): {barcode}: weiterer POST-Versuch ({tries + 1}x)")
                     sleep(1)
                     post_item_response = session.post(target, json=item).json()
                     tries += 1
                 else:
                     error = post_item_response["errorList"]["error"][0]["errorMessage"]
-                    # errors.append([bib_mms, barcode, title, error])
-                    print(f"    Unexpected error: {error}")
+                    (f"move_item(): unerwarteter Fehler bei POST {error}")
                     break
       #+END_SRC
 
@@ -560,13 +606,18 @@ Stefan
       #+BEGIN_SRC python :noweb yes :tangle multi_hol/multi_hol.py
         <<imports>>
 
+        # Get the users input
+        <<MMS-IDs>>
+        # set up the backup
+        <<configure-backup>>
+        #configure logging
+        <<logging-conf>>
+
         # get everything ready for making the API-Calls
         <<api-strings>>
         <<API-key>>
         <<session>>
 
-        # set up the backup
-        <<configure-backup>>
         # function for backing up JSON to disk
         <<save-items>>
 
@@ -574,8 +625,6 @@ Stefan
         <<check-api-res-funcs>>
         <<content-checks>>
 
-        # Get the users input
-        <<MMS-IDs>>
         # Get the items
         <<API-get-items>>
 
@@ -585,24 +634,24 @@ Stefan
         # Move the item to the target holding
         <<move-item>>
 
-        def main(bib_mms=None, target_hol_id=None):
-            if bib_mms is None or target_hol_id is None:
-                bib_mms, target_hol_id = get_mmsids()
+        def main(bib_mms, target_hol_id):
 
-            print("Hole Daten von Alma ...")
+            logger.info("Hole Daten von Alma ...")
             item_list = get_items(bib_mms, target_hol_id)
             item_count = len(item_list)
-            print(f"Zu bearbeitende Exemplare: {item_count}")
+            logger.info(f"Zu bearbeitende Exemplare: {item_count}")
 
-            print("Verarbeitung ...\n")
             for idx, item in enumerate(item_list):
-                print(f"Exemplar {idx} von {item_count}: {item['item_data']['barcode']}")
-                print("  Bearbeite Exemplardaten ...")
+                logger.info(f"Exemplar {idx + 1} von {item_count}: {item['item_data']['barcode']}")
+                logger.info("Bearbeite Exemplardaten ...")
                 change_item_information(item)
 
                 # richtigen Aufruf schreiben
-                print("  Verschieben an Zielholding ...")
+                logger.info("Verschieben an Zielholding ...")
                 move_item(item, bib_mms, target_hol_id)
+
+        main(bib_mms, target_hol_id)
+        input("Verarbeitung abgeschlossen!\nDrücken Sie ENTER um das Programm zu verlassen.")
       #+END_SRC
          
 *** Tests
