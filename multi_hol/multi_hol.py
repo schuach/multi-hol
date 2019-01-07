@@ -105,10 +105,16 @@ def check_response_item(response):
         return "ok"
 def get_bch(holding_id):
     hol = session.get(holdings_api + "/" + holding_id, headers = {"accept": "application/xml"})
-    holxml = ET.fromstring(hol.text)
-    b = holxml.find('.//*[@tag="852"]/*[@code="b"]').text
-    c = holxml.find('.//*[@tag="852"]/*[@code="c"]').text
-    h = holxml.find('.//*[@tag="852"]/*[@code="h"]').text
+    try:
+        holxml = ET.fromstring(hol.text)
+        b = holxml.find('.//*[@tag="852"]/*[@code="b"]').text
+        c = holxml.find('.//*[@tag="852"]/*[@code="c"]').text
+        h = holxml.find('.//*[@tag="852"]/*[@code="h"]').text
+    except:
+        logger.exception("Fehler beim Lesen des Zielholdings (XML).")
+        print("Ein Fehler ist aufgetreten. Kontrollieren Sie die Log-Datei.")
+        input("Drücken Sie ENTER um das Programm zu beenden.")
+        sys.exit(1)
 
     return b, c, h
 # check if the item fits the target holding's 852 b, c and h
