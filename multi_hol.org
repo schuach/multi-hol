@@ -467,6 +467,8 @@
               item["item_data"]["alternative_call_number"] = hol_call_nr
               item["item_data"]["alternative_call_number_type"]["value"] = 8
               item["item_data"]["alternative_call_number_type"]["desc"] = "Other scheme"
+          elif " ; " in alt_call_nr:
+              pass
           else:
               item["item_data"]["alternative_call_number"] = f"{alt_call_nr} ; {hol_call_nr}"
 
