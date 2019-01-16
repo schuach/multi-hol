@@ -131,8 +131,8 @@
       
       #+NAME: logging-conf
       #+begin_src python
-        now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-        log_file = os.path.join(backup_dir, f"{bib_mms}_{target_hol_id}_{now}.log")
+        # now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        log_file = os.path.join(backup_dir, f"{bib_mms}_{target_hol_id}.log")
         logger = logging.getLogger(__name__)
         logger.setLevel(logging.DEBUG)
         logger.propagate = False
@@ -264,7 +264,7 @@
                                     params={"limit": "100"})
 
             # TODO check response
-            if check_response_item(item_list) == "ok":
+            if item_list.status_code == 200:
                 item_list = item_list.json()
             else:
                 logger.error(f"Fehler beim Holen der Daten: {item_list.text}")
@@ -297,7 +297,7 @@
 
             # DONE save the item list to disk
             logger.info("Schreibe Backup.")
-            backup_file = os.path.join(backup_dir, f"{mms_id}_{hol_bch[0]}_{hol_bch[1]}_{hol_bch[2].replace('.', '').replace(',', '').replace('/', '').replace(' ', '-')}.json")
+            backup_file = os.path.join(backup_dir, f"{mms_id}_{hol_bch[0]}_{hol_bch[1]}_{hol_bch[2].replace('.', '').replace(',', '').replace('/', '').replace(' ', '-')}")
             save_json(outlist, backup_file)
             return outlist
       #+END_SRC
@@ -427,19 +427,17 @@
 
         #+NAME: save-items
         #+BEGIN_SRC python
-          def save_json(json_list, filename):
+          def save_json(json_list, filename, count=1):
               """Save JSON-file with a list of items to disk.
 
               Takes a list of JSON-objects."""
 
+              fname = f"{filename}_{count}.json"
               try:
-                  with open(filename, "x") as backup:
+                  with open(fname, "x") as backup:
                       backup.write(json.dumps(json_list))
               except FileExistsError:
-                  # TODO log error/display message and quit()
-                  logger.error("Backup Datei existiert bereits. Backup kann nicht geschrieben werden. Verarbeitung wird abgebrochen.")
-                  input("\nDrücken sie ENTER um zu beenden.")
-                  sys.exit(1)
+                  save_json(json_list, filename, count + 1)
         #+END_SRC
         
 ***** DONE Änderungen an den Items machen
@@ -630,7 +628,7 @@ Stefan
         <<save-items>>
 
         # functions for checking the api-responses
-        <<check-api-res-funcs>>
+        # <<check-api-res-funcs>>
         <<content-checks>>
 
         # Get the items
