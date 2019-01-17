@@ -10,6 +10,7 @@ import json
 from time import sleep
 from easygui import multenterbox
 import logging
+import getpass
 
 # Get the users input
 def get_mmsids(msg=""):
@@ -49,8 +50,8 @@ backup_dir = os.path.join(os.path.expanduser("~"), "Dokumente", "ALMA_multi-hol"
 if not os.path.exists(backup_dir):
     os.makedirs(backup_dir)
 #configure logging
-now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-log_file = os.path.join(backup_dir, f"{bib_mms}_{target_hol_id}_{now}.log")
+# now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+log_file = os.path.join(backup_dir, f"{bib_mms}_{target_hol_id}.log")
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 logger.propagate = False
@@ -67,6 +68,9 @@ log_file_handler.setLevel(logging.DEBUG)
 log_file_handler.setFormatter(
     logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
 logger.addHandler(log_file_handler)
+
+# tell us who started the program
+logger.debug(f"Programm gestartet von {getpass.getuser()}.")
 
 # get everything ready for making the API-Calls
 # api-url-templates
@@ -85,24 +89,19 @@ session.headers.update({
 })
 
 # function for backing up JSON to disk
-def save_json(json_list, filename):
+def save_json(json_list, filename, count=1):
     """Save JSON-file with a list of items to disk.
 
     Takes a list of JSON-objects."""
 
+    fname = f"{filename}_{count}.json"
     try:
-        with open(filename, "x") as backup:
+        with open(fname, "x") as backup:
             backup.write(json.dumps(json_list))
     except FileExistsError:
-        # TODO log error/display message and quit()
-        logger.error("Backup Datei existiert bereits. Backup kann nicht geschrieben werden. Verarbeitung wird abgebrochen.")
-        input("\nDrücken sie ENTER um zu beenden.")
-        sys.exit(1)
+        save_json(json_list, filename, count + 1)
 
 # functions for checking the api-responses
-def check_response_item(response):
-    if response.status_code == 200:
-        return "ok"
 def get_bch(holding_id):
     hol = session.get(holdings_api + "/" + holding_id, headers = {"accept": "application/xml"})
     try:
@@ -163,7 +162,7 @@ def get_items(mms_id, target_hol_id):
                             params={"limit": "100"})
 
     # TODO check response
-    if check_response_item(item_list) == "ok":
+    if item_list.status_code == 200:
         item_list = item_list.json()
     else:
         logger.error(f"Fehler beim Holen der Daten: {item_list.text}")
@@ -196,7 +195,7 @@ def get_items(mms_id, target_hol_id):
 
     # DONE save the item list to disk
     logger.info("Schreibe Backup.")
-    backup_file = os.path.join(backup_dir, f"{mms_id}_{hol_bch[0]}_{hol_bch[1]}_{hol_bch[2].replace('.', '').replace(',', '').replace('/', '').replace(' ', '-')}.json")
+    backup_file = os.path.join(backup_dir, f"{mms_id}_{hol_bch[0]}_{hol_bch[1]}_{hol_bch[2].replace('.', '').replace(',', '').replace('/', '').replace(' ', '-')}")
     save_json(outlist, backup_file)
     return outlist
 
@@ -212,6 +211,8 @@ def change_item_information(item):
         item["item_data"]["alternative_call_number"] = hol_call_nr
         item["item_data"]["alternative_call_number_type"]["value"] = 8
         item["item_data"]["alternative_call_number_type"]["desc"] = "Other scheme"
+    elif " ; " in alt_call_nr or hol_call_nr in alt_call_nr:
+        pass
     else:
         item["item_data"]["alternative_call_number"] = f"{alt_call_nr} ; {hol_call_nr}"
     

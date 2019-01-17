@@ -92,6 +92,7 @@
       from time import sleep
       from easygui import multenterbox
       import logging
+      import getpass
       #+END_SRC
 
       - =sys= :: um Kommandozeilenargumente entgegenzunehmen (=sys.argv=) oder
@@ -118,6 +119,7 @@
       - =easygui.multenterbox= :: um von der Benutzerin die MMS-ID von Bibsatz
            und Zielholding zu bekommen
       - =logging= :: um zu loggen
+      - =getpass= :: damit wir fürs loggen den Usernamen abfragen können
       
 ***** DONE Logging
       CLOSED: [2019-01-04 Fr 13:58]
@@ -149,6 +151,9 @@
         log_file_handler.setFormatter(
             logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
         logger.addHandler(log_file_handler)
+
+        # tell us who started the program
+        logger.debug(f"Programm gestartet von {getpass.getuser()}.")
       #+end_src
       
 ***** Voreinstellungen für die APIs
