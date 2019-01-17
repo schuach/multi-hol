@@ -302,104 +302,82 @@
             return outlist
       #+END_SRC
 
-***** TODO Checks machen
-
-******* TODO API-Checks
-        Überprüft, ob API-Aufrufe erfolgreich waren, etc.
-
-        #+NAME: check-item-api-response
-        #+BEGIN_SRC python
-          def check_response_item(response):
-              if response.status_code == 200:
-                  return "ok"
-        #+END_SRC
-
-********* Code für API-Checks zusammensetzen                       :noexport:
-          Der Übersichtlichkeit halber wollen wir alle API-Checks mit einem
-          noweb-Ausdruck zusammenfassen. Nachdem das in der Doku redundant wäre,
-          wird dieser Teil nicht exportiert.
-
-          #+NAME: check-api-res-funcs
-          #+BEGIN_SRC python :noweb yes :exports none
-          <<check-item-api-response>>
-          #+END_SRC
-
-******* DONE Inhaltliche Checks
-        CLOSED: [2019-01-04 Fr 09:43]
-        :LOGBOOK:
-        - State "DONE"       from "TODO"       [2019-01-04 Fr 09:43]
-        :END:
-        Überprüfung, ob die richtigen Signaturen vorhanden sind, etc. Dazu holen
-        wir uns zuerst das Zielholding und lesen dort =856 b=, =c= und =h= aus.
+***** DONE Inhaltliche Checks
+      CLOSED: [2019-01-04 Fr 09:43]
+      :LOGBOOK:
+      - State "DONE"       from "TODO"       [2019-01-04 Fr 09:43]
+      :END:
+      Überprüfung, ob die richtigen Signaturen vorhanden sind, etc. Dazu holen
+      wir uns zuerst das Zielholding und lesen dort =856 b=, =c= und =h= aus.
         
-        #+NAME: get-bch
-        #+BEGIN_SRC python
-          def get_bch(holding_id):
-              hol = session.get(holdings_api + "/" + holding_id, headers = {"accept": "application/xml"})
-              try:
-                  holxml = ET.fromstring(hol.text)
-                  b = holxml.find('.//*[@tag="852"]/*[@code="b"]').text
-                  c = holxml.find('.//*[@tag="852"]/*[@code="c"]').text
-                  h = holxml.find('.//*[@tag="852"]/*[@code="h"]').text
-              except:
-                  logger.exception("Fehler beim Lesen des Zielholdings (XML).")
-                  print("Ein Fehler ist aufgetreten. Kontrollieren Sie die Log-Datei.")
-                  input("Drücken Sie ENTER um das Programm zu beenden.")
-                  sys.exit(1)
+      #+NAME: get-bch
+      #+BEGIN_SRC python
+        def get_bch(holding_id):
+            hol = session.get(holdings_api + "/" + holding_id, headers = {"accept": "application/xml"})
+            try:
+                holxml = ET.fromstring(hol.text)
+                b = holxml.find('.//*[@tag="852"]/*[@code="b"]').text
+                c = holxml.find('.//*[@tag="852"]/*[@code="c"]').text
+                h = holxml.find('.//*[@tag="852"]/*[@code="h"]').text
+            except:
+                logger.exception("Fehler beim Lesen des Zielholdings (XML).")
+                print("Ein Fehler ist aufgetreten. Kontrollieren Sie die Log-Datei.")
+                input("Drücken Sie ENTER um das Programm zu beenden.")
+                sys.exit(1)
 
-              return b, c, h
+            return b, c, h
+      #+END_SRC
+
+      Dann schauen wir, ob das Item zum HOL passt, damit nicht
+      falschlicherweise Items von anderen Standorten oder mit anderen
+      Grundsignaturen umgehängt werden. Subfelder =b= und =c= müssen
+      übereinstimmen; die Signatur des Items (genaugenommen von dessen HOL)
+      muss mit demselben String anfangen, der in Subfeld =h= steht.
+
+      #+NAME: check-bch
+      #+BEGIN_SRC python
+        # check if the item fits the target holding's 852 b, c and h
+
+        def check_bch(item, hol_bch):
+            """Check if the item fits the target holdings library, location and call number.
+
+            Take an item object (dict) and return True or False."""
+
+            hol_b, hol_c, hol_h = hol_bch
+
+            item_b = item["item_data"]["library"]["value"]
+            item_c = item["item_data"]["location"]["value"]
+            item_h = item["holding_data"]["call_number"]
+            item_alt = item["item_data"]["alternative_call_number"]
+            item_h_from_alt = re.sub(r"^.* ; ", "", item_alt)
+
+            bch_check = [False, False, False]
+
+            if hol_b == item_b:
+                bch_check[0] = True
+
+            if hol_c == item_c:
+                bch_check[1] = True
+
+            if item_h.startswith(hol_h):
+                bch_check[2] = True
+            elif item_h_from_alt.startswith(hol_h):
+                # if the item has already been moved to a false holding because the false
+                # call number is a substring of the right one
+                bch_check[2] = True
+
+            if False in bch_check:
+                return False
+            else:
+                return True
+      #+END_SRC
+
+******* Code für Inhaltliche checks zusammensetzen                 :noexport:
+        #+NAME: content-checks
+        #+BEGIN_SRC python :noweb yes
+          <<get-bch>>
+          <<check-bch>>
         #+END_SRC
-
-        Dann schauen wir, ob das Item zum HOL passt, damit nicht
-        falschlicherweise Items von anderen Standorten oder mit anderen
-        Grundsignaturen umgehängt werden. Subfelder =b= und =c= müssen
-        übereinstimmen; die Signatur des Items (genaugenommen von dessen HOL)
-        muss mit demselben String anfangen, der in Subfeld =h= steht.
-
-        #+NAME: check-bch
-        #+BEGIN_SRC python
-          # check if the item fits the target holding's 852 b, c and h
-
-          def check_bch(item, hol_bch):
-              """Check if the item fits the target holdings library, location and call number.
-
-              Take an item object (dict) and return True or False."""
-
-              hol_b, hol_c, hol_h = hol_bch
-
-              item_b = item["item_data"]["library"]["value"]
-              item_c = item["item_data"]["location"]["value"]
-              item_h = item["holding_data"]["call_number"]
-              item_alt = item["item_data"]["alternative_call_number"]
-              item_h_from_alt = re.sub(r"^.* ; ", "", item_alt)
-
-              bch_check = [False, False, False]
-
-              if hol_b == item_b:
-                  bch_check[0] = True
-
-              if hol_c == item_c:
-                  bch_check[1] = True
-
-              if item_h.startswith(hol_h):
-                  bch_check[2] = True
-              elif item_h_from_alt.startswith(hol_h):
-                  # if the item has already been moved to a false holding because the false
-                  # call number is a substring of the right one
-                  bch_check[2] = True
-
-              if False in bch_check:
-                  return False
-              else:
-                  return True
-        #+END_SRC
-
-********* Code für Inhaltliche checks zusammensetzen               :noexport:
-          #+NAME: content-checks
-          #+BEGIN_SRC python :noweb yes
-            <<get-bch>>
-            <<check-bch>>
-          #+END_SRC
 ***** DONE Sicherungen machen
       CLOSED: [2019-01-04 Fr 10:58]
       :LOGBOOK:
@@ -628,7 +606,6 @@ Stefan
         <<save-items>>
 
         # functions for checking the api-responses
-        # <<check-api-res-funcs>>
         <<content-checks>>
 
         # Get the items
