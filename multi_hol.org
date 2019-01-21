@@ -702,3 +702,37 @@ Stefan
   - [[https://developers.exlibrisgroup.com/alma/apis/bibs/DELETE/gwPcGly021om4RTvtjbPleCklCGxeYAfEqJOcQOaLEvNcHQT0/ozqu3DGTurs/Xx+GZLELMQamEGJL0f6Mjkdw==/af2fb69d-64f4-42bc-bb05-d8a0ae56936e][Withdraw Item]]
   - [[https://developers.exlibrisgroup.com/alma/apis/bibs/POST/gwPcGly021om4RTvtjbPleCklCGxeYAfEqJOcQOaLEvNcHQT0/ozqu3DGTurs/XxIP4LrexQUdc=/af2fb69d-64f4-42bc-bb05-d8a0ae56936e][Create Item]]
   - [[https://developers.exlibrisgroup.com/alma/apis/xsd/rest_item.xsd][Item-Object]]
+
+* Dokumentation für BearbeiterInnen
+*** Allgemeines
+    In Alma gibt es Datensätze (größenteils Zeitschriften und Reihen), an denen
+    für jedes Exemplar ein Holding vorhanden ist, obwohl eigentlich die ganzen
+    Exemplare an einem oder wenigen Holdings hängen sollten. Meistens ist das
+    der Fall, weil in Aleph kein Holding an diesem Titel vorhanden war. Nachdem
+    jedes Exemplar eine andere Signatur hatte (=I 12345/1=, =I 12345/2=, usw.),
+    wurde bei der Migration für jedes einzelne ein eigenes Holding gebildet. Das
+    wollen wir nun bereinigen.
+
+    Nachdem das bei mehr als 40.000 Exemplaren intellektuell nicht zu leisten
+    ist,gibt es zu diesem Zweck ein kleines Programm, dass Sie dabei
+    unterstützt.
+
+    Der Ablauf für Sie schaut folgendermaßen aus:
+
+    - Zielholding identifizieren/erstellen
+    - Programm aufrufen
+    - Falls mehrere Grundsignaturen vorhanden (z. B. "N.F."), mit nächster
+      Grundsignatur wiederholen, bis alles Exemplare richtig hängen
+    - Falls noch nicht geschehen, die Informationen in den Holdings ergänzen,
+      die noch fehlen
+
+*** Zielholding identifizieren/erstellen
+    Um ein Zielholding zu identifizieren bzw. zu erstellen, müssen wir klären,
+    was wir in diesem Zusammenhang unter dem Begriff /Grundsignatur/ verstehen:
+
+    Unter *Grundsignatur* verstehen wir den Teil einer Signatur, der /mehreren
+    Exemplaren einer Zählfolge gemeinsam/ ist. Z. B. =I 156715=, aber auch =I
+    156715/N.F.= oder =I 156715/3.Ser.=. Diese Unterscheidung ist wichtig, weil
+    die Zuordnung der Exemplare an ein Zielholding unter anderem dadurch
+    passiert, dass die Signatur im zu bereinigenden Holding gleich anfängt, wie
+    die im Zielholding.
