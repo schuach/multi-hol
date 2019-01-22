@@ -8,7 +8,7 @@
 #+RST: .. status: draft
 #+LANGUAGE: de
 #+OPTIONS: tex:t todo:t pri:nil tags:t texht:nil ':t
-#+OPTIONS: author:nil creator:nil email:nil date:t
+#+OPTIONS: author:t creator:nil email:t date:t
 #+LATEX_CLASS: koma-article
 #+LATEX_CLASS_OPTIONS: [10pt, a4paper]
 #+LATEX_HEADER: \usepackage[ngerman]{babel}
@@ -711,6 +711,7 @@ Stefan
   :PROPERTIES:
   :EXPORT_FILE_NAME: doc/anleitung_multi-hol.pdf
   :EXPORT_OPTIONS: toc:t num:t
+  :EXPORT_DATE: 2019-01-22
   :END:
 *** Allgemeines
     In Alma gibt es Datensätze (größenteils Zeitschriften und Reihen), an denen

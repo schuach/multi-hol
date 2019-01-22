@@ -1,4 +1,4 @@
-% Created 2019-01-22 Di 08:52
+% Created 2019-01-22 Di 09:07
 % Intended LaTeX compiler: pdflatex
 \documentclass[10pt, a4paper]{scrartcl}
 \usepackage[utf8]{inputenc}
@@ -16,7 +16,8 @@
 \usepackage{hyperref}
 \usepackage[ngerman, germanb]{babel}
 \usepackage[a4paper,margin=2.54cm]{geometry}
-\date{2018-07-23 17:52}
+\author{Stefan Schuh\thanks{stefan.schuh@uni-graz.at}}
+\date{2019-01-22}
 \title{Dokumentation für BearbeiterInnen}
 \hypersetup{
  pdfauthor={Stefan Schuh},
@@ -31,7 +32,7 @@
 \tableofcontents
 
 \section{Allgemeines}
-\label{sec:org35dbba0}
+\label{sec:org9284342}
 In Alma gibt es Datensätze (größenteils Zeitschriften und Reihen), an denen
 für jedes Exemplar ein Holding vorhanden ist, obwohl eigentlich die ganzen
 Exemplare an einem oder wenigen Holdings hängen sollten. Meistens ist das
@@ -56,7 +57,7 @@ die noch fehlen
 \end{itemize}
 
 \subsection{Zuordnung von Exemplaren an das Zielholding}
-\label{sec:orgdd35de4}
+\label{sec:org47f1899}
 Im Zuge der Verarbeitung werden alle Holdings auf Übereinstimmungen mit dem
 Zielholding geprüft. Wenn die richtigen Werte übereinstimmen, werden die
 Exemplare von diesen Holdings ans Zielholding gehängt und das dann
@@ -73,7 +74,7 @@ Die Überprüfung, ob ein Exemplar sich zum Umhängen qualifiziert, läuft
 
 
 \subsubsection{Ein paar Beispiele}
-\label{sec:org07f7c43}
+\label{sec:org69fc0e4}
 Zielholding: \texttt{852 81 \$\$b BDEPO \$\$c DHB \$\$h II 47550}
 
 \begin{center}
@@ -92,12 +93,12 @@ Wir sehen, dass sowohl \texttt{II 47550/3} als auch \texttt{II 47550/N.F.2} der
 Grundsignatur zugeordnet werden, obwohl hier eigentlich zwei Holdings
 angelegt werden müssten. Das ist technisch nicht anders möglich. Daher
 ist die Reihenfolge, in der diese Exemplare bearbeitet werden
-entscheidend. Mehr dazu im Abschnitt \ref{sec:orgb796197}.
+entscheidend. Mehr dazu im Abschnitt \ref{sec:org2eb550b}.
 
 
 
 \subsubsection{Die Grundsignatur}
-\label{sec:orgae5af92}
+\label{sec:org9ba1d80}
 Um ein Zielholding zu identifizieren bzw. zu erstellen, müssen wir klären,
 was wir in diesem Zusammenhang unter dem Begriff \emph{Grundsignatur} verstehen:
 
@@ -108,9 +109,9 @@ die Zuordnung der Exemplare an ein Zielholding unter anderem dadurch
 passiert, dass die Signatur im zu bereinigenden Holding gleich anfängt, wie
 die im Zielholding.
 \section{Arbeitsablauf}
-\label{sec:org7fd2420}
+\label{sec:org81ce472}
 \subsection{MMS-ID des bibliografischen Datensatzes ermitteln}
-\label{sec:org4bf9c30}
+\label{sec:org9ca9c11}
 Damit das Programm arbeiten kann brauchen wir die \emph{lokale} MMS-ID des
 Titeldatensatzes und die MMS-ID des Zielholdings. Am einfachsten ist es,
 wenn man sich diese Nummern irgendwo zwischenspeichert (im Editor z. B.), um
@@ -134,7 +135,7 @@ den Texteditor -- einfach Windows-Taste drücken und "`Editor"' eingeben:
 
 Kopieren Sie die Nummer hinein.
 \subsection{Das Ziel-Holding identifizieren/anlegen}
-\label{sec:orge5286be}
+\label{sec:org2c82a7c}
 In den allermeisten Fällen müssen Sie das Zielholding neu anlegen. Das
 geht aber recht schnell:
 
@@ -161,7 +162,7 @@ zweiten Zeile.
 \end{center}
 \end{enumerate}
 \subsection{Das Programm ausführen}
-\label{sec:orge19359f}
+\label{sec:orge92c025}
 Jetzt, wo Sie das Zielholding angelegt haben und die MMS-IDs vom
 bibliografischen Datensatz und vom Holding in den Editor kopiert haben,
 können Sie das Programm ausführen. Wo es genau liegt, haben Sie
@@ -186,7 +187,7 @@ Zeilen
 
 Wenn Sie \texttt{ENTER} drücken, schließt sich das Fenster und das Progamm ist beendet.
 \subsection{Die Zusammenfassende Bestandsangabe, etc. in Zielholding eintragen}
-\label{sec:orgc1ce1b4}
+\label{sec:orgbdbfbe3}
 Nach Ausführung des Programms sollte es am Datensatz für Ihre Signatur nur
 noch ein Holding geben, an dem alle Exemplare hängen. Überprüfen Sie, was
 da ist und machen Sie eine entsprechende zusammenfassende Bestandsangabe
@@ -194,19 +195,19 @@ im Holding.
 
 Es ist empfehlenswert, diesen Schritt am Schluss zu machen, weil es sein
 kann, dass die Bearbeitung mit weiteren Grundsignaturen ("`N.F."', etc.;
-siehe \ref{sec:orgb796197})
+siehe \ref{sec:org2eb550b})
 wiederholt werden muss. Erst wenn alle Exemplare richtig hängen, lassen
 sich die Angaben in den Holdings korrekt machen.
 \section{Spezialfälle}
-\label{sec:orgfdce096}
+\label{sec:orgf4176c4}
 \subsection{Mehrere Grundsignaturen an einem bibliografischen Datensatz}
-\label{sec:orgb796197}
+\label{sec:org2eb550b}
 Manchmal ist es notwendig, die Exemplare an einem bibliografischen
 Datensatz auf mehrere Holdings aufzuteilen. Das kommt dann vor, wenn es
-mehrere Zählfolgen gibt. Jede dieser Zählfolgen hatte eine eigene \hyperref[sec:orgae5af92]{Grundsignatur}, 
+mehrere Zählfolgen gibt. Jede dieser Zählfolgen hatte eine eigene \hyperref[sec:org9ba1d80]{Grundsignatur}, 
 für die jeweils ein eigenes Holding angelegt werden muss.
 
-Wenn wir uns das Beispiel von \ref{sec:org07f7c43} noch einmal ansehen,
+Wenn wir uns das Beispiel von \ref{sec:org69fc0e4} noch einmal ansehen,
 bemerken wir, dass die Signaturen \texttt{II 47550/3} und \texttt{II 47550/N.F.2} beide
 dem gleichen Zielholding zugeordnet werden. Nachdem der Anfang der
 Signatur übereinstimmt, lässt sich das nicht verhindern. Im Endeffekt
@@ -235,7 +236,7 @@ der neuen Folge oder der 3. Serie weitermacht.
 Exemplare beim richtigen Holding sind.
 \end{enumerate}
 \subsubsection{Ein Beispiel für mehrere Signaturen}
-\label{sec:org744ace8}
+\label{sec:orgbf0db5f}
 Hier ein Screenshot der Holdings-Liste vor der Bearbeitung, an jedem HOL
 gibt es genau ein Exemplar:
 
@@ -297,7 +298,7 @@ Bei \texttt{II 209630/3.Ser.}:
 
 \includegraphics[width=5cm]{/home/schuhs/projects/multi-hol/doc/pic/bestand3.png}
 \subsection{Fehlermeldungen}
-\label{sec:org8c0653b}
+\label{sec:org7eb7aab}
 Wenn alles reibungslos funktioniert sehen sie in dem Terminalfenster, das
 sich mit dem Programm öffnet, diverse Informationen vorbeiziehen. Was
 diese genau bedeuten, muss Sie nicht weiter interessieren. Sie sehen das
@@ -323,7 +324,7 @@ Hier zwei Beispiele für typische Fehlermeldungen:
 \textbf{Bestellung vorhanden:}
 
 \phantomsection
-\label{orgbdc0269}
+\label{org4a66c0f}
 \begin{verbatim}
 ERROR: move_item(): löschen fehlgeschlagen bei @B1103200. {"errorsExist":true,
 "errorList":{"error":[{"errorCode":"401849","errorMessage":"Item delete errors:
