@@ -71,6 +71,7 @@ logger.addHandler(log_file_handler)
 
 # tell us who started the program
 logger.debug(f"Programm gestartet von {getpass.getuser()}.")
+logger.debug(f"bib_mms: {bib_mms}, target_hol_id: {target_hol_id}")
 
 # get everything ready for making the API-Calls
 # api-url-templates

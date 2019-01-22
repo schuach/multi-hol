@@ -6,10 +6,13 @@
 #+DESCRIPTION:
 #+KEYWORDS:
 #+RST: .. status: draft
-#+OPTIONS: H:4 num:nil toc:nil ::t |:t ^:nil -:t f:t *:t <:t
-#+OPTIONS: tex:t todo:t pri:nil tags:t texht:nil
+#+LANGUAGE: de
+#+OPTIONS: tex:t todo:t pri:nil tags:t texht:nil ':t
 #+OPTIONS: author:nil creator:nil email:nil date:t
-#+EXPORT_FILE_NAME: ~/Schreibtisch/multi-hol.rst
+#+LATEX_CLASS: koma-article
+#+LATEX_CLASS_OPTIONS: [10pt, a4paper]
+#+LATEX_HEADER: \usepackage[ngerman]{babel}
+#+LATEX_HEADER: \usepackage[a4paper,margin=2.54cm]{geometry}
 
 
 * Ausgangslage und Ziel
@@ -154,6 +157,7 @@
 
         # tell us who started the program
         logger.debug(f"Programm gestartet von {getpass.getuser()}.")
+        logger.debug(f"bib_mms: {bib_mms}, target_hol_id: {target_hol_id}")
       #+end_src
       
 ***** Voreinstellungen für die APIs
@@ -704,6 +708,10 @@ Stefan
   - [[https://developers.exlibrisgroup.com/alma/apis/xsd/rest_item.xsd][Item-Object]]
 
 * Dokumentation für BearbeiterInnen
+  :PROPERTIES:
+  :EXPORT_FILE_NAME: doc/anleitung_multi-hol.pdf
+  :EXPORT_OPTIONS: toc:t num:t
+  :END:
 *** Allgemeines
     In Alma gibt es Datensätze (größenteils Zeitschriften und Reihen), an denen
     für jedes Exemplar ein Holding vorhanden ist, obwohl eigentlich die ganzen
@@ -714,7 +722,7 @@ Stefan
     wollen wir nun bereinigen.
 
     Nachdem das bei mehr als 40.000 Exemplaren intellektuell nicht zu leisten
-    ist,gibt es zu diesem Zweck ein kleines Programm, dass Sie dabei
+    ist, gibt es zu diesem Zweck ein kleines Programm, das Sie dabei
     unterstützt.
 
     Der Ablauf für Sie schaut folgendermaßen aus:
@@ -726,13 +734,257 @@ Stefan
     - Falls noch nicht geschehen, die Informationen in den Holdings ergänzen,
       die noch fehlen
 
-*** Zielholding identifizieren/erstellen
-    Um ein Zielholding zu identifizieren bzw. zu erstellen, müssen wir klären,
-    was wir in diesem Zusammenhang unter dem Begriff /Grundsignatur/ verstehen:
+***** Zuordnung von Exemplaren an das Zielholding    
+      Im Zuge der Verarbeitung werden alle Holdings auf Übereinstimmungen mit dem
+      Zielholding geprüft. Wenn die richtigen Werte übereinstimmen, werden die
+      Exemplare von diesen Holdings ans Zielholding gehängt und das dann
+      überflüssige Holding gelöscht.
 
-    Unter *Grundsignatur* verstehen wir den Teil einer Signatur, der /mehreren
-    Exemplaren einer Zählfolge gemeinsam/ ist. Z. B. =I 156715=, aber auch =I
-    156715/N.F.= oder =I 156715/3.Ser.=. Diese Unterscheidung ist wichtig, weil
-    die Zuordnung der Exemplare an ein Zielholding unter anderem dadurch
-    passiert, dass die Signatur im zu bereinigenden Holding gleich anfängt, wie
-    die im Zielholding.
+      Die Überprüfung, ob ein Exemplar sich zum Umhängen qualifiziert, läuft
+      über das Feld =852= im Holding:
+
+      - =$$b= muss übereinstimmen
+      - =$$c= muss übereinstimmen
+      - =$$h= genauso /beginnen/ wie =$$h= im Zielholding
+
+      
+******* Ein paar Beispiele
+        Zielholding: =852 81 $$b BDEPO $$c DHB $$h II 47550=
+
+        | Informationen im Ausgangshol           | Match | Kommentar                              |
+        |----------------------------------------+-------+----------------------------------------|
+        | ~$$b BHB $$c MAG $$h II 47550/1~       | Nein  | ~$$b~ und ~$$c~ stimmen nicht überein  |
+        | ~$$b BDEPO $$c DHB $$h II 47550/N.F.2~ | Ja    | ~$$b~ und ~$$c~ stimmen überein        |
+        |                                        |       | ~$$h~ beginnt wie ~$$h~ im Zielholding |
+        | ~$$b BDEPO $$c DHB $$h II 47550/3~     | Ja    |                                        |
+        | ~$$b BDEPO $$c DHBMA $$h 47550/1~      | Nein  | ~$$c~ stimmt nicht überein             |
+
+        Wir sehen, dass sowohl =II 47550/3= als auch =II 47550/N.F.2= der
+        Grundsignatur zugeordnet werden, obwohl hier eigentlich zwei Holdings
+        angelegt werden müssten. Das ist technisch nicht anders möglich. Daher
+        ist die Reihenfolge, in der diese Exemplare bearbeitet werden
+        entscheidend. Mehr dazu im Abschnitt [[Mehrere Grundsignaturen an einem bibliografischen Datensatz]].
+        
+        
+
+******* Die Grundsignatur
+        Um ein Zielholding zu identifizieren bzw. zu erstellen, müssen wir klären,
+        was wir in diesem Zusammenhang unter dem Begriff /Grundsignatur/ verstehen:
+
+        Unter *Grundsignatur* verstehen wir den Teil einer Signatur, der /mehreren
+        Exemplaren einer Zählfolge gemeinsam/ ist. Z. B. =I 156715=, aber auch =I
+        156715/N.F.= oder =I 156715/3.Ser.=. Diese Unterscheidung ist wichtig, weil
+        die Zuordnung der Exemplare an ein Zielholding unter anderem dadurch
+        passiert, dass die Signatur im zu bereinigenden Holding gleich anfängt, wie
+        die im Zielholding.
+*** Arbeitsablauf
+***** MMS-ID des bibliografischen Datensatzes ermitteln
+      Damit das Programm arbeiten kann brauchen wir die /lokale/ MMS-ID des
+      Titeldatensatzes und die MMS-ID des Zielholdings. Am einfachsten ist es,
+      wenn man sich diese Nummern irgendwo zwischenspeichert (im Editor z. B.), um
+      sie dann in die Eingabefelder zu kopieren.
+
+      Wie kommt man zur lokalen MMS-ID? Die lokale MMS-ID ist die, die mit 3339
+      endet (im Gegensatz zu 3331 in der NZ). Am einfachsten kommt man zu dieser
+      in der Datensatz-Ansicht (d. h. wenn man beim Suchergebnis auf den Titel
+      klickt):
+
+      [[~/projects/multi-hol/doc/pic/mmsid_bib.png]]
+
+      Diese Nummer muss mit =99= anfangen und mit =3339= aufhören. Öffnen Sie
+      den Texteditor -- einfach Windows-Taste drücken und "Editor" eingeben: 
+
+      [[~/projects/multi-hol/doc/pic/start_edit.png]]
+
+      Kopieren Sie die Nummer hinein.
+***** Das Ziel-Holding identifizieren/anlegen
+      In den allermeisten Fällen müssen Sie das Zielholding neu anlegen. Das
+      geht aber recht schnell:
+
+      1. Suchen Sie ein beliebiges Holding am gleichen Standort, mit der
+         Grundsignatur, die Sie brauchen und öffnen Sie dieses im Metadateneditor
+         zum bearbeiten
+      2. Klicken Sie auf [Datei -> Duplizieren]
+      3. Im duplizierten Holding (erkennbar am ausgegrauten Symbol) löschen Sie
+         den hinteren Teil der Signatur, sodass nur die Grundsignatur übrig bleibt:
+      
+         [[~/projects/multi-hol/doc/pic/dupliziertes_hol.png]]
+      4. Klicken sie auf =Speichern=
+      5. Kopieren Sie die MMS-ID des Holdings (siehe den grünen Pfeil im Bild bei
+         Punkt 3) auch in den Editor. Die MMS-ID eines Holdings beginnt immer
+         mit =22= und endet mit =3339=. Im Bild sehen Sie das Editorfenster mit
+         der MMS-ID des Bibsatzes in der ersten und der des Holdings in der
+         zweiten Zeile.
+      
+         [[~/projects/multi-hol/doc/pic/mmsid_editor.png]]
+***** Das Programm ausführen
+      Jetzt, wo Sie das Zielholding angelegt haben und die MMS-IDs vom
+      bibliografischen Datensatz und vom Holding in den Editor kopiert haben,
+      können Sie das Programm ausführen. Wo es genau liegt, haben Sie
+      normalerweise bei der Einschulung erfahren, wahrscheinlich haben Sie auch
+      eine Verknüpfung auf Ihrem Desktop. Machen Sie einen Doppelklick auf das
+      Programm und nach ein paar Sekunden kommt ein Eingabefenster:
+
+      [[~/projects/multi-hol/doc/pic/eingabefenster.png]]
+
+      Fügen Sie die jeweiligen Nummern in die entsprechenden Felder ein und
+      klicken Sie auf "OK".
+
+      Im schwarzen Fenster das sich auch mit dem Programm geöffnet hat, sehen
+      Sie den Fortschritt der des Programms. Wenn es fertig ist, sehen Sie die
+      Zeilen
+
+      [[~/projects/multi-hol/doc/pic/verarbeitung_abgeschlossen.png]]
+
+      Wenn Sie =ENTER= drücken, schließt sich das Fenster und das Progamm ist beendet.
+***** Die Zusammenfassende Bestandsangabe, etc. in Zielholding eintragen
+      Nach Ausführung des Programms sollte es am Datensatz für Ihre Signatur nur
+      noch ein Holding geben, an dem alle Exemplare hängen. Überprüfen Sie, was
+      da ist und machen Sie eine entsprechende zusammenfassende Bestandsangabe
+      im Holding.
+
+      Es ist empfehlenswert, diesen Schritt am Schluss zu machen, weil es sein
+      kann, dass die Bearbeitung mit weiteren Grundsignaturen ("N.F.", etc.;
+      siehe [[Mehrere Grundsignaturen an einem bibliografischen Datensatz]])
+      wiederholt werden muss. Erst wenn alle Exemplare richtig hängen, lassen
+      sich die Angaben in den Holdings korrekt machen.
+*** Spezialfälle
+***** Mehrere Grundsignaturen an einem bibliografischen Datensatz
+      Manchmal ist es notwendig, die Exemplare an einem bibliografischen
+      Datensatz auf mehrere Holdings aufzuteilen. Das kommt dann vor, wenn es
+      mehrere Zählfolgen gibt. Jede dieser Zählfolgen hatte eine eigene [[Die
+       Grundsignatur][Grundsignatur]], 
+      für die jeweils ein eigenes Holding angelegt werden muss.
+
+      Wenn wir uns das Beispiel von [[Ein paar Beispiele]] noch einmal ansehen,
+      bemerken wir, dass die Signaturen =II 47550/3= und =II 47550/N.F.2= beide
+      dem gleichen Zielholding zugeordnet werden. Nachdem der Anfang der
+      Signatur übereinstimmt, lässt sich das nicht verhindern. Im Endeffekt
+      funktioniert das Ganze aber trotzdem, wenn wir die Signaturen in der richtigen
+      Reihenfolge, nämlich beginnend mit der kürzesten Signatur, abarbeiten.
+      
+      Würden wir diese Reihenfolge nicht einhalten, d. h. z. B. zuerst =II
+      47550/N.F.= und erst dann =II 47550= bearbeiten, würden beim zweiten Lauf
+      die Exemplare alle von =II 47550/N.F.= wegwandern und sich an =II 47550=
+      hängen (weil ihre Signatur ja auch mit =II 47550= beginnt). Umgekehrt
+      passiert das nicht, weil z. B. =II 47550/23= ja nicht mit =II 47550/N.F.=
+      anfängt.
+
+      Das kling komplizierter, als es in der Praxis ist:
+
+      1. Zuerst das Zielholding für die /kürzeste/ Signatur anlegen und das
+         Programm ausführen. Damit hängen sich /alle/ Exemplare an dieses
+         Holding.
+      2. Danach das Zielholding für die nächste Signatur (z. B. =II 47550/N.F.=)
+         anlegen und das Programm ausführen. Damit wandern die Exemplare der
+         Neuen Folge vom ersten Zielholding an das richtige. An diesem Punkt ist
+         die Reihenfolge nicht mehr wichtig, d. h. es ist egal ob man jetzt mit
+         der neuen Folge oder der 3. Serie weitermacht.
+      3. Diesen Vorgang mit allen notwendigen Grundsignaturen wiederholen, bis alle
+         Exemplare beim richtigen Holding sind.
+******* Ein Beispiel für mehrere Signaturen
+        Hier ein Screenshot der Holdings-Liste vor der Bearbeitung, an jedem HOL
+        gibt es genau ein Exemplar:
+      
+        [[~/projects/multi-hol/doc/pic/holdings_vorher.png]]
+
+        Nachdem wir ein Holding für =II 209630= angelegt und unser Programm haben
+        laufen lassen, gibt es nur noch ein Holding (dafür mit 5 Exemplaren):
+        [[~/projects/multi-hol/doc/pic/holding_nachher.png]]
+
+        Wenn wir die Exemplare dieses Holdings anzeigen lassen, sehen wir in der
+        alternativen Signatur die einzelnen Signaturen für die Exmplare. Auch die
+        neue Folge und die 3. Serie sind hier vertreten:
+
+        [[~/projects/multi-hol/doc/pic/exemplare_nachher1.png]]
+      
+        Also legen wir ein weiteres Holding mit der Signatur =II 209630/N.F.= an
+        und führen das Programm noch einmal aus. Wieder die gleiche MMS-ID für den
+        Bibsatz, aber die MMS-ID für das gerade angelegte neue Holding. Danach
+        gibt es zwei Holdings:
+
+        [[~/projects/multi-hol/doc/pic/holdings_nachher2.png]]
+
+        Wir sehen, dass bei =II 209630= nur noch drei Exemplare sind, die anderen
+        beiden sind zu =II 209630/N.F.= gewandert. Nun fehlt uns noch das eine
+        Exemplar für die 3. Serie. Also legen wir noch ein Holding mit =II
+        209630/3.Ser.= an und lassen das Programm noch einmal laufen. Dann gibt es
+        drei Holdings:
+
+        [[~/projects/multi-hol/doc/pic/holdings_nachher3.png]]
+      
+        Wenn wir alle Exemplare anzeigen und dort die Signatur und die alternative
+        Signatur ansehen, sehen wir, dass jetzt alles richtig hängt:
+
+        [[~/projects/multi-hol/doc/pic/exemplare_nachher2.png]]
+      
+        Nun können wir die restlichen Daten in den Holdings nachtragen:
+
+        Bei =II 209630=:
+
+        #+ATTR_LATEX: :width 5cm :center nil
+        [[~/projects/multi-hol/doc/pic/bestand1.png]]
+
+        Bei =II 209630/N.F.=:
+
+        #+ATTR_LATEX: :width 5cm :center nil
+        [[~/projects/multi-hol/doc/pic/bestand2.png]]
+
+        Bei =II 209630/3.Ser.=:
+
+        #+ATTR_LATEX: :width 5cm :center nil
+        [[~/projects/multi-hol/doc/pic/bestand3.png]]
+***** Fehlermeldungen
+      Wenn alles reibungslos funktioniert sehen sie in dem Terminalfenster, das
+      sich mit dem Programm öffnet, diverse Informationen vorbeiziehen. Was
+      diese genau bedeuten, muss Sie nicht weiter interessieren. Sie sehen das
+      nur, damit Sie wissen, dass das Programm etwas tut -- es kann nämlich
+      recht lange dauern, wenn viele Exemplare umgehängt werden. Führen Sie das
+      Programm also lieber nicht aus, kurz bevor Sie nachhause gehen wollen. ;-)
+
+      Normalerweise beginnt jede einzelne Zeile mit =INFO:=. Wenn das der Fall
+      ist, ist alles ok. Es kann aber auch sein, dass einmal eine Zeile mit
+      =ERROR:= beginnt. Dann hat etwas nicht funktioniert. Üblicherweise
+      passiert das, wenn ein Exmplar entlehnt ist, oder eine Bestellung mit dem
+      Exemplar oder dem Holding verbunden ist.
+      
+      Das ist in den meisten Fällen kein Grund zur Besorgnis: Das Programm läuft
+      weiter und lässt das betroffene Holding samt Item in Ruhe. Allerdings
+      müssen Sie dieses dann manuell bereinigen. Das heißt, wenn eine Bestellung
+      damit verbunden ist, diese entsprechend bearbeiten, nämlich mit dem
+      Zielholding verbinden. Wenn das Exemplar entlehnt ist, müssen Sie eh
+      warten, bis es zurück ist und können es dann umhängen.
+
+      Hier zwei Beispiele für typische Fehlermeldungen:
+
+      *Bestellung vorhanden:*
+
+      #+NAME: Bestellung vorhanden
+      #+BEGIN_EXAMPLE
+      ERROR: move_item(): löschen fehlgeschlagen bei @B1103200. {"errorsExist":true,
+      "errorList":{"error":[{"errorCode":"401849","errorMessage":"Item delete errors:
+      There is a PO line POL-13073 linked to this item @B1103200. Please handle the 
+      order (using the PO line pages) before withdrawing this item / these items. \n",
+      "trackingId":"E01-2101110719-OYNS8-AWAE1622782160"}]},"result":null}
+      #+END_EXAMPLE
+
+      *Exemplar entlehnt:*
+
+      #+BEGIN_EXAMPLE
+      ERROR: move_item(): löschen fehlgeschlagen bei @B1303276. {"errorsExist":true,
+      "errorList":{"error":[{"errorCode":"401849","errorMessage":"Item delete errors:
+      There are loans registered for item @B1303276. Please handle the loans before deleting
+      this item / these items. \n","trackingId":"E01-2201074327-ZSZQY-AWAE1622782160"}]},
+      "result":null}
+      #+END_EXAMPLE
+
+      Bei solchen Fehlermeldungen wissen Sie damit, was zu tun ist. 
+
+      Sollten allerdings andere Fehlermeldungen ausgegeben werden, ist das auch
+      kein Grund zur Panik. Das was Sie am Bildschirm vorbeiziehen sehen (und
+      noch einiges mehr) wird automatisch in eine Log-Datei geschrieben. Wenden
+      Sie sich in so einem Fall bitte an die Person, die dieses Programm betreut
+      (an der UBG [[mailto:stefan.schuh@uni-graz.at][stefan.schuh@uni-graz.at]]). Diese kann dann in der
+      Log-Datei nachsehen, was passiert ist und wie sich der Fehler beheben
+      lässt. Es werden keine Daten verloren gehen -- das Programm schreibt immer
+      eine Sicherungskopie /bevor/ es irgendetwas im System ändert.
