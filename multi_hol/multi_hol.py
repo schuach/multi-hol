@@ -201,11 +201,20 @@ def get_items(mms_id, target_hol_id):
     return outlist
 
 # Change item information like call numbers etc.
+def clean_cn(cn):
+         # matches correct prefixes only
+         match = re.match(r'(^I{1,3}V?,?(?:I{1,3}V?)? [0-9]+)(, ?)(.*$)', cn)
+         # matches all prefixes
+         # match = re.match(r'(^[IV,]+? [0-9]+)(, ?)(.*$)', cn)
+         if match:
+             print(match.groups())
+             cn = match[1] + "/" + match[3]
+         return cn
 def change_item_information(item):
     """Make all necessary changes to the item object"""
     # Set the alternative call number
-    alt_call_nr = item["item_data"]["alternative_call_number"]
-    hol_call_nr = item["holding_data"]["call_number"]
+    alt_call_nr = clean_cn(item["item_data"]["alternative_call_number"])
+    hol_call_nr = clean_cn(item["holding_data"]["call_number"])
     
     # check if the alternative call number is empty
     if alt_call_nr == "":
@@ -216,7 +225,6 @@ def change_item_information(item):
         pass
     else:
         item["item_data"]["alternative_call_number"] = f"{alt_call_nr} ; {hol_call_nr}"
-    
 
     # clear the item policy
     item["item_data"]["policy"]["desc"] == None

@@ -444,8 +444,8 @@
 
         #+NAME: set-alt-call-nr
         #+BEGIN_SRC python
-          alt_call_nr = item["item_data"]["alternative_call_number"]
-          hol_call_nr = item["holding_data"]["call_number"]
+          alt_call_nr = clean_cn(item["item_data"]["alternative_call_number"])
+          hol_call_nr = clean_cn(item["holding_data"]["call_number"])
 
           # check if the alternative call number is empty
           if alt_call_nr == "":
@@ -456,8 +456,24 @@
               pass
           else:
               item["item_data"]["alternative_call_number"] = f"{alt_call_nr} ; {hol_call_nr}"
-
         #+END_SRC
+******* TODO Signaturen putzen
+        Nachdem die Daten eine Geschichte haben, kommen Signaturen manchmal mit
+        "/" als Trennzeichen oder auch mit "," daher. Wo wir schon dabei sind,
+        versuchen wir, das zu vereinheitlichen:
+        #+NAME: clean-call-number
+        #+BEGIN_SRC python
+          def clean_cn(cn):
+                   # matches correct prefixes only
+                   match = re.match(r'(^I{1,3}V?,?(?:I{1,3}V?)? [0-9]+)(, ?)(.*$)', cn)
+                   # matches all prefixes
+                   # match = re.match(r'(^[IV,]+? [0-9]+)(, ?)(.*$)', cn)
+                   if match:
+                       print(match.groups())
+                       cn = match[1] + "/" + match[3]
+                   return cn
+        #+END_SRC
+        
 ******* DONE Exemplarstatus leeren
         Wir nutzen diese Gelegenheit auch gleich, um den Exemplarstatus zu
         löschen, der bei diesen Items in Alma nicht mehr notwendig ist.
@@ -486,6 +502,7 @@
               <<clear-item-policy>>
               return item
         #+END_SRC
+
 ***** DONE Items umhängen und Holdings löschen
       CLOSED: [2019-01-04 Fr 09:39]
       :LOGBOOK:
@@ -621,6 +638,7 @@ Stefan
         <<API-get-items>>
 
         # Change item information like call numbers etc.
+        <<clean-call-number>>
         <<change-item-information>>
 
         # Move the item to the target holding
@@ -853,7 +871,7 @@ Stefan
 ***** Mehrere Grundsignaturen an einem bibliografischen Datensatz
       Manchmal ist es notwendig, die Exemplare an einem bibliografischen
       Datensatz auf mehrere Holdings aufzuteilen. Das kommt dann vor, wenn es
-      mehrere Zählfolgen gibt. Jede dieser Zählfolgen hatte eine eigene [[Die
+      mehrere Zählfolgen gibt. Jede dieser Zählfolgen hat eine eigene [[Die
        Grundsignatur][Grundsignatur]], 
       für die jeweils ein eigenes Holding angelegt werden muss.
 
