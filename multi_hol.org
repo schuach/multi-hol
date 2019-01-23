@@ -13,6 +13,7 @@
 #+LATEX_CLASS_OPTIONS: [10pt, a4paper]
 #+LATEX_HEADER: \usepackage[ngerman]{babel}
 #+LATEX_HEADER: \usepackage[a4paper,margin=2.54cm]{geometry}
+#+EXPORT_FILE_NAME: doc/doc.html
 
 
 * Ausgangslage und Ziel
@@ -31,6 +32,8 @@
   leistbar ist.
 
 *** Angestrebter Workflow
+    *Der angestrebte Workflow ist implementiert:* Siehe [[Dokumentation für BearbeiterInnen][die Anleitung für BearbeiterInnen]].
+
     Eine Bearbeiterin stößt auf einen der betroffenen Datensätze und will ihn
     bereinigen. Dazu sollte sie die folgenden Schritte ausführen müssen:
 
@@ -41,24 +44,76 @@
     2. Das Bereinigungsprogramm aufrufen und folgende Daten eingeben:
        - MMS-ID des Titeldatensatzes (*3339)
        - MMS-ID des Zielholdings
-     
+    3. Nach Ausführung kontrollieren, ob Fehler aufgetreten sind und diese
+       manuell bereinigen.
    
 *** Was soll das Script leisten?
     Im Endeffekt sollen alle Items an ihren richtigen Holdings hängen. Dazu
-    sollte aus dem Zielholdings die Grundsignatur ausgelesen werden. Nur
+    sollte aus dem Zielholding die Grundsignatur ausgelesen werden. Nur
     Exemplare, bei denen Bibliothek, Standort und Grundsignatur mit dem Holding
     übereinstimmen, sollten an das jeweilige Holding gehängt werden.
 
+    Dabei wird folgendermaßen vorgegangen:
+
+    1. Die Benutzerin/der Benutzer übergibt dem Programm die (lokale) MMS-ID des
+       bibliografischen Datensätzes und die MMS-ID des Zielholdings.
+    2. Es werden alle Exemplare an einem Titeldatensatz via API von Alma geholt.
+    3. Über einen Abgleich mit dem Zielholding werden die Exemplare
+       herausgefiltert, bei denen Bibliothek und Standort übereinstimmen und
+       deren Signatur mit der Signatur des Zielholdings /beginnt/.
+    4. Alle sich qualifizierenden Items werden vor der weiteren Bearbeitung
+       lokal gesichert.
+    5. Nun werden an jedem einzelnen Item folgende Änderungen vorgenommen
+       ([[change-item-information]]):
+       - Die Signatur aus dem Holding wird ausgelesen und im Zuge der
+         Verarbeitung insofern vereinheitlicht, dass =I 12345, 1= in =I 12345/1=
+         umgewandelt wird.
+       - Wenn keine alternative Signatur vorhanden ist, wird die Signatur aus
+         dem Holding in die Alternative Signatur geschrieben. Das ist notwendig,
+         weil das Holding ja dann gelöscht wird.
+       - Wenn eine alternative Signatur vorhanden ist, wird die Signatur aus dem
+         Holding nach "\nbsp;\nbsp" (Leerzeichen, Semikolon, Leerzeichen) an die
+         alternative Signatur angefügt.
+       - Der Exemplarstatus wird auf =null= gesetzt.
+    6. Danach werden die Exemplare an das Zielholding verschoben ([[move-item]]):
+       - Das Exemplar wird am Quellholding gelöscht. Durch den Parameter
+         =holdings: delete= wird das Holding gelöscht. Sollte das nicht
+         funktionieren, wird eine Fehlermeldung ausgegeben und ins Logfile
+         geschrieben.
+       - Das Exemplar wird am Zielholding angehängt.
+    7. Verarbeitung abgeschlossen.
     
+    Alle Vorgänge werden in einem Logfile dokumentiert. Nachdem ein Programmlauf
+    sehr lange dauern kann (~45 min für ca. 250 Exemplare in der Sandbox),
+    werden auch Informationen auf stdout geschrieben, sodass die Benutzerinnen
+    und Benutzer sehen, dass das Programm noch läuft/arbeitet.
+
 ***** Mögliche Probleme
       - Für die Bearbeiterin
         - Bei großen Anzahlen an Holdings ist es nicht leicht feststellbar, ob
           mehrere Zielholdings (für neue Folgen, Indizes etc.) angelegt werden
-          müssen.
+          müssen. Das lässt sich nicht verhindern, die Praxis wird zeigen, ob es
+          da gute Workflows gibt.
       - Für das Programm
-        - Sind Bestellungen mit einem der vorhandenen HOLs verknüpft?
-        - Verschiedene Grundsignaturen können mit demselben String anfangen: =I
-          123/1= und =I 123/N.F.,1=
+        - Sind Bestellungen mit einem der vorhandenen HOLs verknüpft oder ist
+          ein Exemplar entlehnt? \Rightarrow Es wird eine Fehlermeldung
+          ausgegeben und ins Log geschrieben. Das betroffene HOL/Exemplar wird
+          übersprungen und muss manuell bearbeitet werden. Die Verarbeitung wird
+          mit dem nächsten HOL/Exemplar fortgesetzt.
+        - Verschiedene Grundsignaturen können mit demselben String anfangen: 
+          =I 123/1= und =I 123/N.F.,1=. \Rightarrow Wenn die Signaturen in der richtigen
+          Reihenfolge (beginnend mit dem kürzesten gemeinsamen Substring)
+          abgearbeitet werden, funktioniert alles. Siehe [[Mehrere Grundsignaturen an einem bibliografischen Datensatz]].
+
+*** Zur Lesbarkeit des Codes
+    Dieses Programm wird im Literate Programming-Verfahren geschrieben. D. h.
+    ich schreibe alles in der Datei =multi-hol.org=. Alles heißt tatsächlich
+    alles: Die Dokumentation, die Sie gerade lesen, das Benutzerhandbuch und der
+    tatsächliche Programmcode. Alle Dateien deren Namen mit =.py= enden (also
+    die tatsächlichen Scripts), werden automatisch aus diesem Text extrahiert.
+    Wie gut diese Programmdateien lesbar sind weiß ich nicht, weil ich sie
+    eigentlich nie direkt ansehe. Ich bitte daher, stilistische Schwächen in
+    diesen zu verzeihen.
 
 * Skript
 
@@ -77,6 +132,15 @@
         source ~/.venvs/multi-hol/bin/activate
       #+END_SRC
 
+      Unter Windows (mit PowerShell) schaut das so aus:
+
+      #+BEGIN_SRC shell
+        # Die virtuelle Umgebung erstellen
+        python -m venv ~/.venvs/multi-hol
+
+        # Die virtuelle Umgebung aktivieren
+        ~/.venvs/multi-hol/Scripts/Activate.ps1
+      #+END_SRC
 
 ***** Imports etc.
       Als erstes importieren wir verschiedenen Module, die wir brauchen:
@@ -272,7 +336,7 @@
             item_list = session.get(item_api.format(mms_id=mms_id, holding_id="ALL"),
                                     params={"limit": "100"})
 
-            # TODO check response
+            # DONE check response
             if item_list.status_code == 200:
                 item_list = item_list.json()
             else:
@@ -393,7 +457,7 @@
       - State "DONE"       from "TODO"       [2019-01-04 Fr 10:58]
       :END:
 ******* DONE Das Sicherungsverzeichnis festlegen
-        Hier legen wir das Verzeichnis fest, in das die Sicherungen und reports
+        Hier legen wir das Verzeichnis fest, in das die Sicherungen und Logs
         kommen. Falls es nicht vorhanden ist, erstellen wir es.
         
         #+NAME: configure-backup
@@ -661,14 +725,56 @@ Stefan
                 logger.info("Bearbeite Exemplardaten ...")
                 change_item_information(item)
 
-                # richtigen Aufruf schreiben
                 logger.info("Verschieben an Zielholding ...")
                 move_item(item, bib_mms, target_hol_id)
 
-        main(bib_mms, target_hol_id)
-        input("Verarbeitung abgeschlossen!\nDrücken Sie ENTER um das Programm zu verlassen.")
+            input("Verarbeitung abgeschlossen!\nDrücken Sie ENTER um das Programm zu verlassen.")
+
+        main()
       #+END_SRC
          
+*** Erstellen einer ausführbaren Datei für die BenutzerInnen
+    Die Anwenderinnen dieses Programms werden kein ProgrammiererInnen mit einem
+    Linux- oder Mac-System sein, sondern Bibliothekarinnen mit Windows.
+    Unter Windows ist, im Gegensatz zu den landläufigen Linux-Distros oder OSX,
+    Python nicht standardmäßig installiert. Es reicht also nicht das Script mit
+    ~chmod +x multi-hol.py~ ausführbar zu machen.
+
+    Es muss eine exe-Datei erstellt werden. Das geht am einfachsten mit dem
+    Modul =pyinstaller=, das via =pip= verfügbar ist. =pynistaller= ist nicht in
+    =requirements.txt= aufgeführt, daher muss es nachinstalliert werden. Die
+    nachfolgende Anleitung geht davon aus, dass Sie das alles unter Windows mit
+    PowerShell machen.
+    
+    Aktivieren Sie das Virtual Environment (siehe [[Python Virtual
+    environment]]) und installieren sie =pyinstaller=
+
+    #+begin_src shell
+      # virtual environment aktivieren
+      ~/.venvs/multi-hol/Scripts/Activate.ps1
+
+      # das Modul installieren
+      pip install pyinstaller
+    #+end_src
+
+    Danach sollten Sie in =multi-hol/multi-hol.py= in die Variable =api_key=
+    Ihren API-Key eintragen. Wie oben erwähnt verwende ich während der
+    Entwicklung den Keyring des Systems, für die Deployment-Version muss er aber
+    tatsächlich hier stehen. Vergessen Sie nicht, ihn danach wieder zu löschen
+    (vor allem, falls Sie Ihre Version dieses Repos auf GitHub hosten ...).
+
+    Danach führen Sie folgende Zeile aus, um die ausführbare Datei zu erstellen.
+    Das Flag -F macht, dass alles in eine einzelne Datei gepackt wird, anstatt
+    eines Ordners mit einzelnen Files.
+
+    #+begin_src shell
+      # run pyinstaller
+      pyinstaller -F multi-hol/multi-hol.py
+    #+end_src
+
+    Das war es auch schon. Sie sollten im Ordner =dist= die Datei
+    =multi-hol.exe= finden.
+
 *** Tests
     Natürlich will das alles gut getestet sein.
 
@@ -817,7 +923,8 @@ Stefan
 
       Diese Nummer muss mit =99= anfangen und mit =3339= aufhören. Öffnen Sie
       den Texteditor -- einfach Windows-Taste drücken und "Editor" eingeben: 
-
+      
+      #+ATTR_LATEX: :width 8cm
       [[~/projects/multi-hol/doc/pic/start_edit.png]]
 
       Kopieren Sie die Nummer hinein.
@@ -839,7 +946,8 @@ Stefan
          mit =22= und endet mit =3339=. Im Bild sehen Sie das Editorfenster mit
          der MMS-ID des Bibsatzes in der ersten und der des Holdings in der
          zweiten Zeile.
-      
+         
+        #+ATTR_LATEX: :width 6cm
          [[~/projects/multi-hol/doc/pic/mmsid_editor.png]]
 ***** Das Programm ausführen
       Jetzt, wo Sie das Zielholding angelegt haben und die MMS-IDs vom
@@ -914,6 +1022,7 @@ Stefan
 
         Nachdem wir ein Holding für =II 209630= angelegt und unser Programm haben
         laufen lassen, gibt es nur noch ein Holding (dafür mit 5 Exemplaren):
+
         [[~/projects/multi-hol/doc/pic/holding_nachher.png]]
 
         Wenn wir die Exemplare dieses Holdings anzeigen lassen, sehen wir in der
