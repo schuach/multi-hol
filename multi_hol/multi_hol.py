@@ -38,40 +38,33 @@ def get_mmsids(msg=""):
     else:
         return bib_mms, target_hol_id
 
-# assign values to bib_mms and target_hol_id
-if len(sys.argv) == 3:
-    bib_mms = sys.argv[1]
-    target_hol_id = sys.argv[2]
-else:
-    bib_mms, target_hol_id = get_mmsids()
 # set up the backup
 backup_dir = os.path.join(os.path.expanduser("~"), "Dokumente", "ALMA_multi-hol")
 # make the directory if it does not exist
 if not os.path.exists(backup_dir):
     os.makedirs(backup_dir)
 #configure logging
-# now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-log_file = os.path.join(backup_dir, f"{bib_mms}_{target_hol_id}.log")
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-logger.propagate = False
+def logging_setup(bib_mms, target_hol_id):
+    # now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    log_file = os.path.join(backup_dir, f"{bib_mms}_{target_hol_id}.log")
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.DEBUG)
+    logger.propagate = False
 
-# add handlers
-log_stream_handler = logging.StreamHandler(sys.stdout)
-log_stream_handler.setLevel(logging.INFO)
-log_stream_handler.setFormatter(
-    logging.Formatter('%(levelname)s: %(message)s'))
-logger.addHandler(log_stream_handler)
+    # add handlers
+    log_stream_handler = logging.StreamHandler(sys.stdout)
+    log_stream_handler.setLevel(logging.INFO)
+    log_stream_handler.setFormatter(
+        logging.Formatter('%(levelname)s: %(message)s'))
+    logger.addHandler(log_stream_handler)
 
-log_file_handler = logging.FileHandler(log_file)
-log_file_handler.setLevel(logging.DEBUG)
-log_file_handler.setFormatter(
-    logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-logger.addHandler(log_file_handler)
+    log_file_handler = logging.FileHandler(log_file)
+    log_file_handler.setLevel(logging.DEBUG)
+    log_file_handler.setFormatter(
+        logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+    logger.addHandler(log_file_handler)
 
-# tell us who started the program
-logger.debug(f"Programm gestartet von {getpass.getuser()}.")
-logger.debug(f"bib_mms: {bib_mms}, target_hol_id: {target_hol_id}")
+    return logger
 
 # get everything ready for making the API-Calls
 # api-url-templates
@@ -162,7 +155,7 @@ def get_items(mms_id, target_hol_id):
     item_list = session.get(item_api.format(mms_id=mms_id, holding_id="ALL"),
                             params={"limit": "100"})
 
-    # TODO check response
+    # DONE check response
     if item_list.status_code == 200:
         item_list = item_list.json()
     else:
@@ -273,8 +266,22 @@ def move_item(item, bib_mms, target_hol_id):
             (f"move_item(): unerwarteter Fehler bei POST {error}")
             break
 
-def main(bib_mms, target_hol_id):
+def main():
+    # assign values to bib_mms and target_hol_id
+    if len(sys.argv) == 3:
+        bib_mms = sys.argv[1]
+        target_hol_id = sys.argv[2]
+    else:
+        bib_mms, target_hol_id = get_mmsids()
 
+    global logger
+    logger = logging_setup(bib_mms, target_hol_id)
+
+    # log who started the program
+    logger.debug(f"Programm gestartet von {getpass.getuser()}.")
+    logger.debug(f"bib_mms: {bib_mms}, target_hol_id: {target_hol_id}")
+
+    # do your work
     logger.info("Hole Daten von Alma ...")
     item_list = get_items(bib_mms, target_hol_id)
     item_count = len(item_list)
@@ -285,9 +292,9 @@ def main(bib_mms, target_hol_id):
         logger.info("Bearbeite Exemplardaten ...")
         change_item_information(item)
 
-        # richtigen Aufruf schreiben
         logger.info("Verschieben an Zielholding ...")
         move_item(item, bib_mms, target_hol_id)
 
-main(bib_mms, target_hol_id)
-input("Verarbeitung abgeschlossen!\nDrücken Sie ENTER um das Programm zu verlassen.")
+    input("Verarbeitung abgeschlossen!\nDrücken Sie ENTER um das Programm zu verlassen.")
+
+main()
