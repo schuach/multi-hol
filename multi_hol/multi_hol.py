@@ -202,6 +202,7 @@ def get_items(mms_id, target_hol_id):
 
 # Change item information like call numbers etc.
 def clean_cn(cn):
+         """Return call numbers with '/' as delimiter after base call number"""
          # matches correct prefixes only
          match = re.match(r'(^I{1,3}V?,?(?:I{1,3}V?)? [0-9]+)(, ?)(.*$)', cn)
          # matches all prefixes
