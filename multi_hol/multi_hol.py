@@ -111,7 +111,6 @@ def get_bch(holding_id):
 
     return b, c, h
 # check if the item fits the target holding's 852 b, c and h
-
 def check_bch(item, hol_bch):
     """Check if the item fits the target holdings library, location and call number.
 
@@ -121,9 +120,9 @@ def check_bch(item, hol_bch):
 
     item_b = item["item_data"]["library"]["value"]
     item_c = item["item_data"]["location"]["value"]
-    item_h = item["holding_data"]["call_number"]
+    item_h = item["holding_data"]["call_number"].replace(" ", "")
     item_alt = item["item_data"]["alternative_call_number"]
-    item_h_from_alt = re.sub(r"^.* ; ", "", item_alt)
+    item_h_from_alt = re.sub(r"^.* ; ", "", item_alt).replace(" ", "")
 
     bch_check = [False, False, False]
 
@@ -133,9 +132,9 @@ def check_bch(item, hol_bch):
     if hol_c == item_c:
         bch_check[1] = True
 
-    if item_h.startswith(hol_h):
+    if item_h.startswith(hol_h.replace(" ", "")):
         bch_check[2] = True
-    elif item_h_from_alt.startswith(hol_h):
+    elif item_h_from_alt.startswith(hol_h.replace(" ", "")):
         # if the item has already been moved to a false holding because the false
         # call number is a substring of the right one
         bch_check[2] = True
@@ -297,4 +296,4 @@ def main():
 
     input("Verarbeitung abgeschlossen!\nDrücken Sie ENTER um das Programm zu verlassen.")
 
-main()
+# main()

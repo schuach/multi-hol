@@ -1,5 +1,11 @@
 import pytest
+import logging
 from multi_hol.multi_hol import *
+
+# setup logging
+global logger
+logger = logging_setup("TEST", "LOG")
+
 # with alternative call number
 with open("tests/testdata/10items_alt.json") as fh:
     items_alt = json.load(fh)["item"]
@@ -11,7 +17,7 @@ item_alt = items_alt.pop(0)
 item_no_alt = items_no_alt.pop(0)
 
 def test_get_item():
-    items = get_items("990006489880203339")
+    items = get_items("990006489880203339", "22332262300003339")
     assert len(items) == 106
     barcodes = []
     for item in items:

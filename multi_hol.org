@@ -116,7 +116,6 @@
     diesen zu verzeihen.
 
 * Skript
-
 *** Allgemeine Vorbereitungen
     Dieses Script benötigt Python 3.6 oder höher.
 ***** Python Virtual environment
@@ -414,9 +413,9 @@
 
             item_b = item["item_data"]["library"]["value"]
             item_c = item["item_data"]["location"]["value"]
-            item_h = item["holding_data"]["call_number"]
+            item_h = item["holding_data"]["call_number"].replace(" ", "")
             item_alt = item["item_data"]["alternative_call_number"]
-            item_h_from_alt = re.sub(r"^.* ; ", "", item_alt)
+            item_h_from_alt = re.sub(r"^.* ; ", "", item_alt).replace(" ", "")
 
             bch_check = [False, False, False]
 
@@ -426,9 +425,9 @@
             if hol_c == item_c:
                 bch_check[1] = True
 
-            if item_h.startswith(hol_h):
+            if item_h.startswith(hol_h.replace(" ", "")):
                 bch_check[2] = True
-            elif item_h_from_alt.startswith(hol_h):
+            elif item_h_from_alt.startswith(hol_h.replace(" ", "")):
                 # if the item has already been moved to a false holding because the false
                 # call number is a substring of the right one
                 bch_check[2] = True
@@ -738,7 +737,7 @@ Stefan
 
             input("Verarbeitung abgeschlossen!\nDrücken Sie ENTER um das Programm zu verlassen.")
 
-        main()
+        # main()
       #+END_SRC
          
 *** Erstellen einer ausführbaren Datei für die BenutzerInnen
@@ -796,7 +795,13 @@ Stefan
 
     #+BEGIN_SRC python :noweb yes :tangle tests/test_multi_hol.py
       import pytest
+      import logging
       from multi_hol.multi_hol import *
+
+      # setup logging
+      global logger
+      logger = logging_setup("TEST", "LOG")
+
       # with alternative call number
       with open("tests/testdata/10items_alt.json") as fh:
           items_alt = json.load(fh)["item"]
@@ -808,7 +813,7 @@ Stefan
       item_no_alt = items_no_alt.pop(0)
 
       def test_get_item():
-          items = get_items("990006489880203339")
+          items = get_items("990006489880203339", "22332262300003339")
           assert len(items) == 106
           barcodes = []
           for item in items:
@@ -850,6 +855,10 @@ Stefan
   :EXPORT_OPTIONS: toc:t num:t
   :EXPORT_DATE: 2019-01-22
   :END:
+*** *DIESEN ABSCHNITT IM LaTeX-EXPORT ENTFERNEN*                   :noexport:
+    Die Bilder im Handbuch funktionieren im HTML-Export nicht. Es ist derzeit
+    ohnehin geplant, die BenutzerInnenanleitung nur als PDF zur Verfügung zu
+    stellen.
 *** Allgemeines
     In Alma gibt es Datensätze (größenteils Zeitschriften und Reihen), an denen
     für jedes Exemplar ein Holding vorhanden ist, obwohl eigentlich die ganzen
