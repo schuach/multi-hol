@@ -1,0 +1,2000 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="de" xml:lang="de">
+<head>
+<!-- 2019-01-23 Mi 09:57 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bereinigung von mehrfach-Holdings</title>
+<meta name="generator" content="Org mode" />
+<meta name="author" content="Stefan Schuh" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .equation-container {
+    display: table;
+    text-align: center;
+    width: 100%;
+  }
+  .equation {
+    vertical-align: middle;
+  }
+  .equation-label {
+    display: table-cell;
+    text-align: right;
+    vertical-align: middle;
+  }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { width: 90%; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012-2018 Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">Bereinigung von mehrfach-Holdings</h1>
+<div id="table-of-contents">
+<h2>Inhaltsverzeichnis</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org67f2871">1. Ausgangslage und Ziel</a>
+<ul>
+<li><a href="#org9e6e6f5">1.1. Angestrebter Workflow</a></li>
+<li><a href="#org67490da">1.2. Was soll das Script leisten?</a>
+<ul>
+<li><a href="#org88d4421">1.2.1. Mögliche Probleme</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#orge07019c">2. Skript</a>
+<ul>
+<li><a href="#orgc4f00f5">2.1. Allgemeine Vorbereitungen</a>
+<ul>
+<li><a href="#orgf6f4cb3">2.1.1. Python Virtual environment</a></li>
+<li><a href="#org85f80c2">2.1.2. Imports etc.</a></li>
+<li><a href="#org6c327aa">2.1.3. <span class="done DONE">DONE</span> Logging</a></li>
+<li><a href="#orgf93f8dc">2.1.4. Voreinstellungen für die APIs</a></li>
+<li><a href="#org4215d32">2.1.5. Session, Authentifizierung</a></li>
+</ul>
+</li>
+<li><a href="#orgf218a89">2.2. Verarbeitung</a>
+<ul>
+<li><a href="#orgdb9224d">2.2.1. <span class="done DONE">DONE</span> Feststellen, welche Datensätze bearbeitet werden sollen und ein paar Daten auslesen</a></li>
+<li><a href="#orgd4f7870">2.2.2. <span class="done DONE">DONE</span> Items holen</a></li>
+<li><a href="#org15745f5">2.2.3. <span class="done DONE">DONE</span> Inhaltliche Checks</a></li>
+<li><a href="#org4024dc4">2.2.4. <span class="done DONE">DONE</span> Sicherungen machen</a></li>
+<li><a href="#orgd11835b">2.2.5. <span class="done DONE">DONE</span> Änderungen an den Items machen</a></li>
+<li><a href="#org1a9a937">2.2.6. <span class="done DONE">DONE</span> Items umhängen und Holdings löschen</a></li>
+</ul>
+</li>
+<li><a href="#org19dfa19">2.3. Alles Zusammensetzen</a>
+<ul>
+<li><a href="#orgd9ceee6">2.3.1. Das Modul</a></li>
+</ul>
+</li>
+<li><a href="#org2461015">2.4. Tests</a></li>
+</ul>
+</li>
+<li><a href="#orgc6010db">3. API-Dokumentation</a></li>
+<li><a href="#org3b819e0">4. Dokumentation für BearbeiterInnen</a>
+<ul>
+<li><a href="#orgbf16fb6">4.1. Allgemeines</a>
+<ul>
+<li><a href="#orgb8f5caa">4.1.1. Zuordnung von Exemplaren an das Zielholding</a></li>
+</ul>
+</li>
+<li><a href="#org201f328">4.2. Arbeitsablauf</a>
+<ul>
+<li><a href="#org71c5caf">4.2.1. MMS-ID des bibliografischen Datensatzes ermitteln</a></li>
+<li><a href="#orgd5ac8a2">4.2.2. Das Ziel-Holding identifizieren/anlegen</a></li>
+<li><a href="#org938c602">4.2.3. Das Programm ausführen</a></li>
+<li><a href="#orgb2df227">4.2.4. Die Zusammenfassende Bestandsangabe, etc. in Zielholding eintragen</a></li>
+</ul>
+</li>
+<li><a href="#orgaa04388">4.3. Spezialfälle</a>
+<ul>
+<li><a href="#org045a645">4.3.1. Mehrere Grundsignaturen an einem bibliografischen Datensatz</a></li>
+<li><a href="#orgfe20fb9">4.3.2. Fehlermeldungen</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-org67f2871" class="outline-2">
+<h2 id="org67f2871"><span class="section-number-2">1</span> Ausgangslage und Ziel</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Bei der Datenvorbereitung vor der Migration konnten nicht alle Exemplare einem
+Holding zugeordnet werden, weil in Aleph kein HOL vorhanden war. Infolgedessen
+gibt es Titeldatensätze mit bis zu 678 Holdings mit je einem Item.
+</p>
+
+<p>
+<a href="data/DHB_ITEMS_ohne_HOL_20180717.xlsx">Auswertung (Aleph) der DHB-Datensätze ohne Holding</a>
+</p>
+
+<p>
+Es handelt sich um insgesamt 41639 Exemplare an 291 AC-Sätzen und 2394 LB-Sätzen.
+</p>
+
+<p>
+Ziel ist es, die Exemplare an diesen mehrfach-HOLs an ein einzelnes Holding zu
+hängen und die überschüssigen HOLs zu löschen. Dies sollte in einem
+halbautomatischen Prozess passieren (wenn es vollautomatisch ginge, hätten wir
+das wohl schon vorher in Aleph gemacht), weil eine manuelle Bereinigung nicht
+leistbar ist.
+</p>
+</div>
+
+<div id="outline-container-org9e6e6f5" class="outline-3">
+<h3 id="org9e6e6f5"><span class="section-number-3">1.1</span> Angestrebter Workflow</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+<b>Der angestrebte Workflow ist implementiert:</b> Siehe <a href="#org3b819e0">die Anleitung für BearbeiterInnen</a>.
+</p>
+
+<p>
+Eine Bearbeiterin stößt auf einen der betroffenen Datensätze und will ihn
+bereinigen. Dazu sollte sie die folgenden Schritte ausführen müssen:
+</p>
+
+<ol class="org-ol">
+<li>Das Holding anlegen, an dem die Items im Endeffekt hängen sollen. Wichtig
+ist, dass zumindest Bibliothek, Standort und Grundsignatur eingetragen
+werden, weil über diese ein Abgleich stattfindet. Wenn notwendig mehrere
+HOLs (für Indexe, neue folgen, etc.).</li>
+<li>Das Bereinigungsprogramm aufrufen und folgende Daten eingeben:
+<ul class="org-ul">
+<li>MMS-ID des Titeldatensatzes (*3339)</li>
+<li>MMS-ID des Zielholdings</li>
+</ul></li>
+<li>Nach Ausführung kontrollieren, ob Fehler aufgetreten sind und diese
+manuell bereinigen.</li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-org67490da" class="outline-3">
+<h3 id="org67490da"><span class="section-number-3">1.2</span> Was soll das Script leisten?</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+Im Endeffekt sollen alle Items an ihren richtigen Holdings hängen. Dazu
+sollte aus dem Zielholding die Grundsignatur ausgelesen werden. Nur
+Exemplare, bei denen Bibliothek, Standort und Grundsignatur mit dem Holding
+übereinstimmen, sollten an das jeweilige Holding gehängt werden.
+</p>
+
+<p>
+Dabei wird folgendermaßen vorgegangen:
+</p>
+
+<ol class="org-ol">
+<li>Die Benutzerin/der Benutzer übergibt dem Programm die (lokale) MMS-ID des
+bibliografischen Datensätzes und die MMS-ID des Zielholdings.</li>
+<li>Es werden alle Exemplare an einem Titeldatensatz via API von Alma geholt.</li>
+<li>Über einen Abgleich mit dem Zielholding werden die Exemplare
+herausgefiltert, bei denen Bibliothek und Standort übereinstimmen und
+deren Signatur mit der Signatur des Zielholdings <i>beginnt</i>.</li>
+<li>Alle sich qualifizierenden Items werden vor der weiteren Bearbeitung
+lokal gesichert.</li>
+<li>Nun werden an jedem einzelnen Item folgende Änderungen vorgenommen
+(<a href="#orgd84e527">1</a>):
+<ul class="org-ul">
+<li>Die Signatur aus dem Holding wird ausgelesen und im Zuge der
+Verarbeitung insofern vereinheitlicht, dass <code>I 12345, 1</code> in <code>I 12345/1</code>
+umgewandelt wird.</li>
+<li>Wenn keine alternative Signatur vorhanden ist, wird die Signatur aus
+dem Holding in die Alternative Signatur geschrieben. Das ist notwendig,
+weil das Holding ja dann gelöscht wird.</li>
+<li>Wenn eine alternative Signatur vorhanden ist, wird die Signatur aus dem
+Holding nach &bdquo;&nbsp;;&nbsp;&ldquo; (Leerzeichen, Semikolon, Leerzeichen) an die
+alternative Signatur angefügt.</li>
+<li>Der Exemplarstatus wird auf <code>null</code> gesetzt.</li>
+</ul></li>
+<li>Danach werden die Exemplare an das Zielholding verschoben (<a href="#org5cd3ce3">1</a>):
+<ul class="org-ul">
+<li>Das Exemplar wird am Quellholding gelöscht. Durch den Parameter
+<code>holdings: delete</code> wird das Holding gelöscht. Sollte das nicht
+funktionieren, wird eine Fehlermeldung ausgegeben und ins Logfile
+geschrieben.</li>
+<li>Das Exemplar wird am Zielholding angehängt.</li>
+</ul></li>
+<li>Verarbeitung abgeschlossen.</li>
+</ol>
+
+<p>
+Alle Vorgänge werden in einem Logfile dokumentiert. Nachdem ein Programmlauf
+sehr lange dauern kann (~45 min für ca. 250 Exemplare in der Sandbox),
+werden auch Informationen auf stdout geschrieben, sodass die Benutzerinnen
+und Benutzer sehen, dass das Programm noch läuft/arbeitet.
+</p>
+</div>
+
+<div id="outline-container-org88d4421" class="outline-4">
+<h4 id="org88d4421"><span class="section-number-4">1.2.1</span> Mögliche Probleme</h4>
+<div class="outline-text-4" id="text-1-2-1">
+<ul class="org-ul">
+<li>Für die Bearbeiterin
+<ul class="org-ul">
+<li>Bei großen Anzahlen an Holdings ist es nicht leicht feststellbar, ob
+mehrere Zielholdings (für neue Folgen, Indizes etc.) angelegt werden
+müssen. Das lässt sich nicht verhindern, die Praxis wird zeigen, ob es
+da gute Workflows gibt.</li>
+</ul></li>
+<li>Für das Programm
+<ul class="org-ul">
+<li>Sind Bestellungen mit einem der vorhandenen HOLs verknüpft oder ist
+ein Exemplar entlehnt? &rArr; Es wird eine Fehlermeldung
+ausgegeben und ins Log geschrieben. Das betroffene HOL/Exemplar wird
+übersprungen und muss manuell bearbeitet werden. Die Verarbeitung wird
+mit dem nächsten HOL/Exemplar fortgesetzt.</li>
+<li>Verschiedene Grundsignaturen können mit demselben String anfangen: 
+<code>I~123/1</code> und <code>I 123/N.F.,1</code>. &rArr; Wenn die Signaturen in der richtigen
+Reihenfolge (beginnend mit dem kürzesten gemeinsamen Substring)
+abgearbeitet werden, funktioniert alles. Siehe <a href="#org045a645">4.3.1</a>.</li>
+</ul></li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orge07019c" class="outline-2">
+<h2 id="orge07019c"><span class="section-number-2">2</span> Skript</h2>
+<div class="outline-text-2" id="text-2">
+</div>
+<div id="outline-container-orgc4f00f5" class="outline-3">
+<h3 id="orgc4f00f5"><span class="section-number-3">2.1</span> Allgemeine Vorbereitungen</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+Dieses Script benötigt Python 3.6 oder höher.
+</p>
+</div>
+<div id="outline-container-orgf6f4cb3" class="outline-4">
+<h4 id="orgf6f4cb3"><span class="section-number-4">2.1.1</span> Python Virtual environment</h4>
+<div class="outline-text-4" id="text-2-1-1">
+<p>
+Damit immer die richtigen Versionen des Interpreters und der Module
+verwendet werden, erstellen wir eine Virtual Environment. Dazu führen wir
+in der Shell folgendes aus:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell"><span style="color: #75715E;"># </span><span style="color: #75715E;">Die virtuelle Umgebung erstellen</span>
+python -m venv ~/.venvs/multi-hol
+
+<span style="color: #75715E;"># </span><span style="color: #75715E;">Die virtuelle Umgebung aktivieren</span>
+<span style="color: #F92672;">source</span> ~/.venvs/multi-hol/bin/activate
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-org85f80c2" class="outline-4">
+<h4 id="org85f80c2"><span class="section-number-4">2.1.2</span> Imports etc.</h4>
+<div class="outline-text-4" id="text-2-1-2">
+<p>
+Als erstes importieren wir verschiedenen Module, die wir brauchen:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python" id="orgea4f93e"><span style="color: #F92672;">import</span> sys
+<span style="color: #F92672;">import</span> re
+<span style="color: #F92672;">import</span> os
+<span style="color: #F92672;">import</span> keyring
+<span style="color: #F92672;">import</span> datetime
+<span style="color: #F92672;">from</span> requests <span style="color: #F92672;">import</span> Session
+<span style="color: #F92672;">import</span> urllib.parse
+<span style="color: #F92672;">import</span> xml.etree.ElementTree <span style="color: #F92672;">as</span> ET
+<span style="color: #F92672;">import</span> json
+<span style="color: #F92672;">from</span> time <span style="color: #F92672;">import</span> sleep
+<span style="color: #F92672;">from</span> easygui <span style="color: #F92672;">import</span> multenterbox
+<span style="color: #F92672;">import</span> logging
+<span style="color: #F92672;">import</span> getpass
+</pre>
+</div>
+
+<dl class="org-dl">
+<dt><code>sys</code></dt><dd>um Kommandozeilenargumente entgegenzunehmen (<code>sys.argv</code>) oder
+die Ausführung abzubrechen (<code>sys.exit</code>)</dd>
+<dt><code>os</code></dt><dd>Verzeichnisse anlegen, Dateien löschen, etc.</dd>
+<dt><code>keyring</code></dt><dd>dient dazu, den API-Key aus dem System-Keyring zu lesen. Für die
+Distribution ist das natürlich nicht brauchbar. Im Endeffekt wird man hier
+den Key wohl direkt reinschreiben müssen. Achtung: Dieses
+Modul gehört nicht zur Standardbibliothek und muss erst via
+<code>pip</code> installiert werden.</dd>
+<dt><code>requests.Session</code></dt><dd>vereinfacht die API-Calls, indem man die Header
+nicht immer eingeben muss, etc. Achtung: Dieses Modul gehört
+nicht zur Standardbibliothek und muss erst via <code>pip</code> installiert
+werden.</dd>
+<dt><code>urllib.parse</code></dt><dd>wird verwendet, um Strings, die als Teil des URL
+verwendet werden, richtig zu codieren</dd>
+<dt><code>xml.etree.ElementTree</code></dt><dd>Nachdem wir nicht viel brauchen, ist es
+einfacher XML zu parsen als die Holdings in pymarc zu lesen, oder in
+JSON umzuwandeln.</dd>
+<dt><code>json</code></dt><dd>Wir bekommen von der Alma Item-Objekte als JSON. Mit dieser Bibliothek
+lassen sich JSON-Daten gut manipulieren.</dd>
+<dt><code>time.sleep</code></dt><dd>um zwischen Löschen am Quell- und Posten am Zielholding
+zu warten</dd>
+<dt><code>easygui.multenterbox</code></dt><dd>um von der Benutzerin die MMS-ID von Bibsatz
+und Zielholding zu bekommen</dd>
+<dt><code>logging</code></dt><dd>um zu loggen</dd>
+<dt><code>getpass</code></dt><dd>damit wir fürs loggen den Usernamen abfragen können</dd>
+</dl>
+</div>
+</div>
+
+<div id="outline-container-org6c327aa" class="outline-4">
+<h4 id="org6c327aa"><span class="section-number-4">2.1.3</span> <span class="done DONE">DONE</span> Logging</h4>
+<div class="outline-text-4" id="text-2-1-3">
+<p>
+Falls etwas danebengeht, wollen wir genau wissen, was passiert ist. Daher
+loggen wir alles mit, was passiert. Fast alles &#x2013; nachdem wir für den
+Dateinamen die MMS-IDs brauchen holen wir uns selbige schon, bevor wir den
+logger konfigurieren (<a href="#org5f98a35">1</a>).
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python" id="org2a1e4ff"><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">logging_setup</span><span style="color: #AE81FF;">(</span>bib_mms, target_hol_id<span style="color: #AE81FF;">)</span>:
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")</span>
+    <span style="color: #FD971F;">log_file</span> = os.path.join<span style="color: #AE81FF;">(</span>backup_dir, f<span style="color: #E6DB74;">"{bib_mms}_{target_hol_id}.log"</span><span style="color: #AE81FF;">)</span>
+    <span style="color: #FD971F;">logger</span> = logging.getLogger<span style="color: #AE81FF;">(</span><span style="color: #F92672;">__name__</span><span style="color: #AE81FF;">)</span>
+    logger.setLevel<span style="color: #AE81FF;">(</span>logging.DEBUG<span style="color: #AE81FF;">)</span>
+    <span style="color: #FD971F;">logger.propagate</span> = <span style="color: #AE81FF;">False</span>
+
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">add handlers</span>
+    <span style="color: #FD971F;">log_stream_handler</span> = logging.StreamHandler<span style="color: #AE81FF;">(</span>sys.stdout<span style="color: #AE81FF;">)</span>
+    log_stream_handler.setLevel<span style="color: #AE81FF;">(</span>logging.INFO<span style="color: #AE81FF;">)</span>
+    log_stream_handler.setFormatter<span style="color: #AE81FF;">(</span>
+        logging.Formatter<span style="color: #66D9EF;">(</span><span style="color: #E6DB74;">'%(levelname)s: %(message)s'</span><span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span>
+    logger.addHandler<span style="color: #AE81FF;">(</span>log_stream_handler<span style="color: #AE81FF;">)</span>
+
+    <span style="color: #FD971F;">log_file_handler</span> = logging.FileHandler<span style="color: #AE81FF;">(</span>log_file<span style="color: #AE81FF;">)</span>
+    log_file_handler.setLevel<span style="color: #AE81FF;">(</span>logging.DEBUG<span style="color: #AE81FF;">)</span>
+    log_file_handler.setFormatter<span style="color: #AE81FF;">(</span>
+        logging.Formatter<span style="color: #66D9EF;">(</span><span style="color: #E6DB74;">'%(asctime)s - %(levelname)s - %(message)s'</span><span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span>
+    logger.addHandler<span style="color: #AE81FF;">(</span>log_file_handler<span style="color: #AE81FF;">)</span>
+
+    <span style="color: #F92672;">return</span> logger
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgf93f8dc" class="outline-4">
+<h4 id="orgf93f8dc"><span class="section-number-4">2.1.4</span> Voreinstellungen für die APIs</h4>
+<div class="outline-text-4" id="text-2-1-4">
+<p>
+Nachdem wir viele Calls machen werden, ist es wohl gut, die APIs in
+Variablen mit benannten Platzhaltern zu schreiben, sodass wir dann nur
+noch die jeweiligen IDs einfüllen müssen:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python" id="orgfffbcf5"><span style="color: #75715E;"># </span><span style="color: #75715E;">api-url-templates</span>
+<span style="color: #FD971F;">base_url</span> = <span style="color: #E6DB74;">'https://api-eu.hosted.exlibrisgroup.com/almaws/v1'</span>
+<span style="color: #FD971F;">barcode_api</span> = base_url + <span style="color: #E6DB74;">"/items?item_barcode={barcode}"</span>
+<span style="color: #FD971F;">holdings_api</span> = base_url + <span style="color: #E6DB74;">"/bibs/{mms_id}/holdings"</span>
+<span style="color: #FD971F;">bib_api</span> = base_url + <span style="color: #E6DB74;">"/bibs/{mms_id}"</span>
+<span style="color: #FD971F;">item_api</span> = base_url + <span style="color: #E6DB74;">"/bibs/{mms_id}/holdings/{holding_id}/items"</span>
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org4215d32" class="outline-4">
+<h4 id="org4215d32"><span class="section-number-4">2.1.5</span> Session, Authentifizierung</h4>
+<div class="outline-text-4" id="text-2-1-5">
+<p>
+Damit wir nicht bei jedem Aufruf die Header übergeben müssen, ist es
+praktisch, dass die requests-Bibliothek ein Session-Objekt hat.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python" id="org065b173"><span style="color: #75715E;"># </span><span style="color: #75715E;">session um immer gleiche header zu schicken etc.</span>
+<span style="color: #FD971F;">session</span> = Session<span style="color: #AE81FF;">()</span>
+session.headers.update<span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">{</span>
+    <span style="color: #E6DB74;">"accept"</span>: <span style="color: #E6DB74;">"application/json"</span>,
+    <span style="color: #E6DB74;">"authorization"</span>: f<span style="color: #E6DB74;">"apikey {api_key}"</span>
+<span style="color: #66D9EF;">}</span><span style="color: #AE81FF;">)</span>
+</pre>
+</div>
+
+<p>
+Den API-Key hole ich mit der keyring-Bibliothek aus dem System-Keyring.
+Für eine Deployment-Version muss man den Key wohl hereinschreiben.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python" id="org7e71567"><span style="color: #75715E;"># </span><span style="color: #75715E;">get api key from system keyring</span>
+<span style="color: #FD971F;">api_key</span> = keyring.get_password<span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"ALMA-API"</span>, <span style="color: #E6DB74;">"BIB-Sandbox"</span><span style="color: #AE81FF;">)</span>.rstrip<span style="color: #AE81FF;">()</span>
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgf218a89" class="outline-3">
+<h3 id="orgf218a89"><span class="section-number-3">2.2</span> Verarbeitung</h3>
+<div class="outline-text-3" id="text-2-2">
+</div>
+<div id="outline-container-orgdb9224d" class="outline-4">
+<h4 id="orgdb9224d"><span class="section-number-4">2.2.1</span> <span class="done DONE">DONE</span> Feststellen, welche Datensätze bearbeitet werden sollen und ein paar Daten auslesen</h4>
+<div class="outline-text-4" id="text-2-2-1">
+<p>
+Um zu wissen, an welchen Datensätzen gearbeitet werden soll, muss die
+Bearbeiterin die MMS-IDs vom Bibsatz und dem Zielolding eingeben.
+</p>
+
+<p>
+Nachdem Whitespace vorne und hinten entfern wurde, sollte folgendes
+überprüft werden:
+</p>
+<ul class="org-ul">
+<li class="on"><code>[X]</code> Beginnt die bib-mms mit 99?</li>
+<li class="on"><code>[X]</code> Beginnt die hol-mms mit 22?</li>
+<li class="on"><code>[X]</code> Endet die bib-mms auf 3339?</li>
+</ul>
+<div class="org-src-container">
+<pre class="src src-python" id="org5f98a35"><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">get_mmsids</span><span style="color: #AE81FF;">(</span>msg=<span style="color: #E6DB74;">""</span><span style="color: #AE81FF;">)</span>:
+    <span style="color: #E6DB74;">"""Return the MMS-IDs of the bibrecord and the target-holding."""</span>
+
+    <span style="color: #F92672;">if</span> msg == <span style="color: #E6DB74;">""</span>:
+        <span style="color: #FD971F;">msg</span> =  <span style="color: #E6DB74;">"Bitte folgende Daten eingeben."</span>
+    <span style="color: #F92672;">else</span>:
+        <span style="color: #FD971F;">msg</span> = msg
+
+    <span style="color: #FD971F;">bib_mms</span>, <span style="color: #FD971F;">target_hol_id</span> = multenterbox<span style="color: #AE81FF;">(</span>msg=msg,
+                                           title=<span style="color: #E6DB74;">"Multi-HOL-Bereinigung"</span>,
+                                           fields=<span style="color: #66D9EF;">[</span><span style="color: #E6DB74;">"MMS-ID des Bibsatzes"</span>, <span style="color: #E6DB74;">"MMS-ID des Zielholdings"</span><span style="color: #66D9EF;">]</span><span style="color: #AE81FF;">)</span>
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">check the input</span>
+    <span style="color: #F92672;">if</span> <span style="color: #AE81FF;">(</span><span style="color: #F92672;">not</span> bib_mms.startswith<span style="color: #66D9EF;">(</span><span style="color: #E6DB74;">"99"</span><span style="color: #66D9EF;">)</span>
+            <span style="color: #F92672;">or</span> <span style="color: #F92672;">not</span> bib_mms.endswith<span style="color: #66D9EF;">(</span><span style="color: #E6DB74;">"3339"</span><span style="color: #66D9EF;">)</span>
+            <span style="color: #F92672;">or</span> <span style="color: #F92672;">not</span> target_hol_id.startswith<span style="color: #66D9EF;">(</span><span style="color: #E6DB74;">"22"</span><span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span>:
+        <span style="color: #FD971F;">msg</span> = <span style="color: #E6DB74;">"""*** Formaler Fehler in der Eingabe ***</span>
+
+<span style="color: #E6DB74;">    1. Die MMS-ID des Bibsatzes muss mit "99" beginnen</span>
+<span style="color: #E6DB74;">    2. Die MMS-ID des Bibsatzes muss mit "3339" enden</span>
+<span style="color: #E6DB74;">    3. Die MMS-ID des HOL-Satzes muss mit "22" beginnen</span>
+<span style="color: #E6DB74;">"""</span>
+        get_mmsids<span style="color: #AE81FF;">(</span>msg<span style="color: #AE81FF;">)</span>
+    <span style="color: #F92672;">else</span>:
+        <span style="color: #F92672;">return</span> bib_mms, target_hol_id
+
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgd4f7870" class="outline-4">
+<h4 id="orgd4f7870"><span class="section-number-4">2.2.2</span> <span class="done DONE">DONE</span> Items holen</h4>
+<div class="outline-text-4" id="text-2-2-2">
+<p>
+Nachdem die Bearbeiterin uns mit den Identifiern versorgt hat, holen wir
+uns die Item-Liste. Nachdem die API per default nur zehn Items liefert,
+setzen wir das Limit auf die höchstzahl (100). Sollten mehr als 100
+Exemplare vorhanden sein, machen wir mehrere API-Aufrufe mit
+entsprechendem Offset.
+</p>
+
+<p>
+Dazu verwenden wir eine Funktion, die die MMS-IDs des Bibsatzes und eine
+Liste von Item-Objekten zurückgibt.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python" id="orgc514d1c"><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">get_items</span><span style="color: #AE81FF;">(</span>mms_id, target_hol_id<span style="color: #AE81FF;">)</span>:
+    <span style="color: #FD971F;">mms_id</span> = mms_id
+    <span style="color: #FD971F;">outlist</span> = <span style="color: #AE81FF;">[]</span>
+    <span style="color: #FD971F;">hol_bch</span> = get_bch<span style="color: #AE81FF;">(</span>target_hol_id<span style="color: #AE81FF;">)</span>
+
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">get the item-list from Alma</span>
+    <span style="color: #FD971F;">item_list</span> = session.get<span style="color: #AE81FF;">(</span>item_api.<span style="color: #F92672;">format</span><span style="color: #66D9EF;">(</span>mms_id=mms_id, holding_id=<span style="color: #E6DB74;">"ALL"</span><span style="color: #66D9EF;">)</span>,
+                            params=<span style="color: #66D9EF;">{</span><span style="color: #E6DB74;">"limit"</span>: <span style="color: #E6DB74;">"100"</span><span style="color: #66D9EF;">}</span><span style="color: #AE81FF;">)</span>
+
+    <span style="color: #75715E;"># </span><span style="color: #afd8af;">DONE</span><span style="color: #75715E;"> check response</span>
+    <span style="color: #F92672;">if</span> item_list.status_code == <span style="color: #AE81FF;">200</span>:
+        <span style="color: #FD971F;">item_list</span> = item_list.json<span style="color: #AE81FF;">()</span>
+    <span style="color: #F92672;">else</span>:
+        logger.error<span style="color: #AE81FF;">(</span>f<span style="color: #E6DB74;">"Fehler beim Holen der Daten: {item_list.text}"</span><span style="color: #AE81FF;">)</span>
+        <span style="color: #F92672;">input</span><span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"Dr&#252;cken Sie ENTER um das Programm zu beenden."</span><span style="color: #AE81FF;">)</span>
+        sys.<span style="color: #AE81FF;">exit</span><span style="color: #AE81FF;">(</span><span style="color: #AE81FF;">1</span><span style="color: #AE81FF;">)</span>
+
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">append the items to the list to be returned, if they pass the tests</span>
+    logger.debug<span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"get_items(): Items zur outlist hinzuf&#252;gen"</span><span style="color: #AE81FF;">)</span>
+    <span style="color: #F92672;">for</span> item <span style="color: #F92672;">in</span> item_list<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item"</span><span style="color: #AE81FF;">]</span>:
+        <span style="color: #F92672;">if</span> check_bch<span style="color: #AE81FF;">(</span>item, hol_bch<span style="color: #AE81FF;">)</span>:
+            outlist.append<span style="color: #AE81FF;">(</span>item<span style="color: #AE81FF;">)</span>
+
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">check if there are more than 100 items</span>
+    <span style="color: #FD971F;">total_record_count</span> = <span style="color: #F92672;">int</span><span style="color: #AE81FF;">(</span>item_list<span style="color: #66D9EF;">[</span><span style="color: #E6DB74;">"total_record_count"</span><span style="color: #66D9EF;">]</span><span style="color: #AE81FF;">)</span>
+    <span style="color: #F92672;">if</span> total_record_count &gt; <span style="color: #AE81FF;">100</span>:
+        <span style="color: #75715E;"># </span><span style="color: #75715E;">calculate number of needed additional calls</span>
+        <span style="color: #FD971F;">add_calls</span> = total_record_count // <span style="color: #AE81FF;">100</span>
+        logger.debug<span style="color: #AE81FF;">(</span>f<span style="color: #E6DB74;">"get_items(): {total_record_count} items vorhanden, {add_calls} weitere API-calls notwendig."</span><span style="color: #AE81FF;">)</span>
+        <span style="color: #75715E;"># </span><span style="color: #75715E;">make the additional calls and add answer to the outlist</span>
+        <span style="color: #F92672;">for</span> i <span style="color: #F92672;">in</span> <span style="color: #F92672;">range</span><span style="color: #AE81FF;">(</span>add_calls<span style="color: #AE81FF;">)</span>:
+            <span style="color: #FD971F;">offset</span> = <span style="color: #AE81FF;">(</span>i + <span style="color: #AE81FF;">1</span><span style="color: #AE81FF;">)</span> * <span style="color: #AE81FF;">100</span>
+            logger.debug<span style="color: #AE81FF;">(</span>f<span style="color: #E6DB74;">"get_items(): additional call {offset}"</span><span style="color: #AE81FF;">)</span>
+
+            <span style="color: #FD971F;">next_list</span> = session.get<span style="color: #AE81FF;">(</span>item_api.<span style="color: #F92672;">format</span><span style="color: #66D9EF;">(</span>mms_id=mms_id, holding_id=<span style="color: #E6DB74;">"ALL"</span><span style="color: #66D9EF;">)</span>,
+                                    params=<span style="color: #66D9EF;">{</span><span style="color: #E6DB74;">"limit"</span>: <span style="color: #E6DB74;">"100"</span>, <span style="color: #E6DB74;">"offset"</span>: offset<span style="color: #66D9EF;">}</span><span style="color: #AE81FF;">)</span>.json<span style="color: #AE81FF;">()</span>
+            logger.debug<span style="color: #AE81FF;">(</span>f<span style="color: #E6DB74;">"get_items(): weitere items zu outlist hinzuf&#252;gen (call {offset}/{add_calls})"</span><span style="color: #AE81FF;">)</span>
+            <span style="color: #F92672;">for</span> item <span style="color: #F92672;">in</span> next_list<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item"</span><span style="color: #AE81FF;">]</span>:
+                <span style="color: #F92672;">if</span> check_bch<span style="color: #AE81FF;">(</span>item, hol_bch<span style="color: #AE81FF;">)</span>:
+                    outlist.append<span style="color: #AE81FF;">(</span>item<span style="color: #AE81FF;">)</span>
+
+    <span style="color: #75715E;"># </span><span style="color: #afd8af;">DONE</span><span style="color: #75715E;"> save the item list to disk</span>
+    logger.info<span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"Schreibe Backup."</span><span style="color: #AE81FF;">)</span>
+    <span style="color: #FD971F;">backup_file</span> = os.path.join<span style="color: #AE81FF;">(</span>backup_dir, f<span style="color: #E6DB74;">"{mms_id}_{hol_bch[0]}_{hol_bch[1]}_{hol_bch[2].replace('.', '').replace(',', '').replace('/', '').replace(' ', '-')}"</span><span style="color: #AE81FF;">)</span>
+    save_json<span style="color: #AE81FF;">(</span>outlist, backup_file<span style="color: #AE81FF;">)</span>
+    <span style="color: #F92672;">return</span> outlist
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org15745f5" class="outline-4">
+<h4 id="org15745f5"><span class="section-number-4">2.2.3</span> <span class="done DONE">DONE</span> Inhaltliche Checks</h4>
+<div class="outline-text-4" id="text-2-2-3">
+<p>
+Überprüfung, ob die richtigen Signaturen vorhanden sind, etc. Dazu holen
+wir uns zuerst das Zielholding und lesen dort <code>856 b</code>, <code>c</code> und <code>h</code> aus.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python" id="orgf5c0358"><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">get_bch</span><span style="color: #AE81FF;">(</span>holding_id<span style="color: #AE81FF;">)</span>:
+    <span style="color: #FD971F;">hol</span> = session.get<span style="color: #AE81FF;">(</span>holdings_api + <span style="color: #E6DB74;">"/"</span> + holding_id, headers = <span style="color: #66D9EF;">{</span><span style="color: #E6DB74;">"accept"</span>: <span style="color: #E6DB74;">"application/xml"</span><span style="color: #66D9EF;">}</span><span style="color: #AE81FF;">)</span>
+    <span style="color: #F92672;">try</span>:
+        <span style="color: #FD971F;">holxml</span> = ET.fromstring<span style="color: #AE81FF;">(</span>hol.text<span style="color: #AE81FF;">)</span>
+        <span style="color: #FD971F;">b</span> = holxml.find<span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">'.//*[@tag="852"]/*[@code="b"]'</span><span style="color: #AE81FF;">)</span>.text
+        <span style="color: #FD971F;">c</span> = holxml.find<span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">'.//*[@tag="852"]/*[@code="c"]'</span><span style="color: #AE81FF;">)</span>.text
+        <span style="color: #FD971F;">h</span> = holxml.find<span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">'.//*[@tag="852"]/*[@code="h"]'</span><span style="color: #AE81FF;">)</span>.text
+    <span style="color: #F92672;">except</span>:
+        logger.exception<span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"Fehler beim Lesen des Zielholdings (XML)."</span><span style="color: #AE81FF;">)</span>
+        <span style="color: #F92672;">print</span><span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"Ein Fehler ist aufgetreten. Kontrollieren Sie die Log-Datei."</span><span style="color: #AE81FF;">)</span>
+        <span style="color: #F92672;">input</span><span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"Dr&#252;cken Sie ENTER um das Programm zu beenden."</span><span style="color: #AE81FF;">)</span>
+        sys.<span style="color: #AE81FF;">exit</span><span style="color: #AE81FF;">(</span><span style="color: #AE81FF;">1</span><span style="color: #AE81FF;">)</span>
+
+    <span style="color: #F92672;">return</span> b, c, h
+</pre>
+</div>
+
+<p>
+Dann schauen wir, ob das Item zum HOL passt, damit nicht
+falschlicherweise Items von anderen Standorten oder mit anderen
+Grundsignaturen umgehängt werden. Subfelder <code>b</code> und <code>c</code> müssen
+übereinstimmen; die Signatur des Items (genaugenommen von dessen HOL)
+muss mit demselben String anfangen, der in Subfeld <code>h</code> steht.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python" id="org3a0b128"><span style="color: #75715E;"># </span><span style="color: #75715E;">check if the item fits the target holding's 852 b, c and h</span>
+
+<span style="color: #F92672;">def</span> <span style="color: #A6E22E;">check_bch</span><span style="color: #AE81FF;">(</span>item, hol_bch<span style="color: #AE81FF;">)</span>:
+    <span style="color: #E6DB74;">"""Check if the item fits the target holdings library, location and call number.</span>
+
+<span style="color: #E6DB74;">    Take an item object (dict) and return True or False."""</span>
+
+    <span style="color: #FD971F;">hol_b</span>, <span style="color: #FD971F;">hol_c</span>, <span style="color: #FD971F;">hol_h</span> = hol_bch
+
+    <span style="color: #FD971F;">item_b</span> = item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"library"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"value"</span><span style="color: #AE81FF;">]</span>
+    <span style="color: #FD971F;">item_c</span> = item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"location"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"value"</span><span style="color: #AE81FF;">]</span>
+    <span style="color: #FD971F;">item_h</span> = item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"holding_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"call_number"</span><span style="color: #AE81FF;">]</span>
+    <span style="color: #FD971F;">item_alt</span> = item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"alternative_call_number"</span><span style="color: #AE81FF;">]</span>
+    <span style="color: #FD971F;">item_h_from_alt</span> = re.sub<span style="color: #AE81FF;">(</span>r<span style="color: #E6DB74;">"^.* ; "</span>, <span style="color: #E6DB74;">""</span>, item_alt<span style="color: #AE81FF;">)</span>
+
+    <span style="color: #FD971F;">bch_check</span> = <span style="color: #AE81FF;">[</span><span style="color: #AE81FF;">False</span>, <span style="color: #AE81FF;">False</span>, <span style="color: #AE81FF;">False</span><span style="color: #AE81FF;">]</span>
+
+    <span style="color: #F92672;">if</span> hol_b == item_b:
+        <span style="color: #FD971F;">bch_check</span><span style="color: #AE81FF;">[</span><span style="color: #AE81FF;">0</span><span style="color: #AE81FF;">]</span> = <span style="color: #AE81FF;">True</span>
+
+    <span style="color: #F92672;">if</span> hol_c == item_c:
+        <span style="color: #FD971F;">bch_check</span><span style="color: #AE81FF;">[</span><span style="color: #AE81FF;">1</span><span style="color: #AE81FF;">]</span> = <span style="color: #AE81FF;">True</span>
+
+    <span style="color: #F92672;">if</span> item_h.startswith<span style="color: #AE81FF;">(</span>hol_h<span style="color: #AE81FF;">)</span>:
+        <span style="color: #FD971F;">bch_check</span><span style="color: #AE81FF;">[</span><span style="color: #AE81FF;">2</span><span style="color: #AE81FF;">]</span> = <span style="color: #AE81FF;">True</span>
+    <span style="color: #F92672;">elif</span> item_h_from_alt.startswith<span style="color: #AE81FF;">(</span>hol_h<span style="color: #AE81FF;">)</span>:
+        <span style="color: #75715E;"># </span><span style="color: #75715E;">if the item has already been moved to a false holding because the false</span>
+        <span style="color: #75715E;"># </span><span style="color: #75715E;">call number is a substring of the right one</span>
+        <span style="color: #FD971F;">bch_check</span><span style="color: #AE81FF;">[</span><span style="color: #AE81FF;">2</span><span style="color: #AE81FF;">]</span> = <span style="color: #AE81FF;">True</span>
+
+    <span style="color: #F92672;">if</span> <span style="color: #AE81FF;">False</span> <span style="color: #F92672;">in</span> bch_check:
+        <span style="color: #F92672;">return</span> <span style="color: #AE81FF;">False</span>
+    <span style="color: #F92672;">else</span>:
+        <span style="color: #F92672;">return</span> <span style="color: #AE81FF;">True</span>
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org4024dc4" class="outline-4">
+<h4 id="org4024dc4"><span class="section-number-4">2.2.4</span> <span class="done DONE">DONE</span> Sicherungen machen</h4>
+<div class="outline-text-4" id="text-2-2-4">
+</div>
+<ol class="org-ol">
+<li><a id="org422e27c"></a><span class="done DONE">DONE</span> Das Sicherungsverzeichnis festlegen<br />
+<div class="outline-text-5" id="text-2-2-4-1">
+<p>
+Hier legen wir das Verzeichnis fest, in das die Sicherungen und Logs
+kommen. Falls es nicht vorhanden ist, erstellen wir es.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python" id="org66c2a8e"><span style="color: #FD971F;">backup_dir</span> = os.path.join<span style="color: #AE81FF;">(</span>os.path.expanduser<span style="color: #66D9EF;">(</span><span style="color: #E6DB74;">"~"</span><span style="color: #66D9EF;">)</span>, <span style="color: #E6DB74;">"Dokumente"</span>, <span style="color: #E6DB74;">"ALMA_multi-hol"</span><span style="color: #AE81FF;">)</span>
+<span style="color: #75715E;"># </span><span style="color: #75715E;">make the directory if it does not exist</span>
+<span style="color: #F92672;">if</span> <span style="color: #F92672;">not</span> os.path.exists<span style="color: #AE81FF;">(</span>backup_dir<span style="color: #AE81FF;">)</span>:
+    os.makedirs<span style="color: #AE81FF;">(</span>backup_dir<span style="color: #AE81FF;">)</span>
+</pre>
+</div>
+</div>
+</li>
+
+<li><a id="orgc5af73c"></a><span class="done DONE">DONE</span> Items<br />
+<div class="outline-text-5" id="text-2-2-4-2">
+<p>
+Nachdem wir ja von <code>get_items()</code> eine Liste mit Item-Objekten
+zurückbekommen, schreiben wir diese einfach in eine Datei.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python" id="org67f0903"><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">save_json</span><span style="color: #AE81FF;">(</span>json_list, filename, count=<span style="color: #AE81FF;">1</span><span style="color: #AE81FF;">)</span>:
+    <span style="color: #E6DB74;">"""Save JSON-file with a list of items to disk.</span>
+
+<span style="color: #E6DB74;">    Takes a list of JSON-objects."""</span>
+
+    <span style="color: #FD971F;">fname</span> = f<span style="color: #E6DB74;">"{filename}_{count}.json"</span>
+    <span style="color: #F92672;">try</span>:
+        <span style="color: #F92672;">with</span> <span style="color: #F92672;">open</span><span style="color: #AE81FF;">(</span>fname, <span style="color: #E6DB74;">"x"</span><span style="color: #AE81FF;">)</span> <span style="color: #F92672;">as</span> backup:
+            backup.write<span style="color: #AE81FF;">(</span>json.dumps<span style="color: #66D9EF;">(</span>json_list<span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span>
+    <span style="color: #F92672;">except</span> FileExistsError:
+        save_json<span style="color: #AE81FF;">(</span>json_list, filename, count + <span style="color: #AE81FF;">1</span><span style="color: #AE81FF;">)</span>
+</pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+
+<div id="outline-container-orgd11835b" class="outline-4">
+<h4 id="orgd11835b"><span class="section-number-4">2.2.5</span> <span class="done DONE">DONE</span> Änderungen an den Items machen</h4>
+<div class="outline-text-4" id="text-2-2-5">
+<p>
+An den Exemplaren sind unter Umständen noch Änderungen vorzunehmen. Diese
+beziehen sich in erste Linie auf die Signaturen.
+</p>
+</div>
+<ol class="org-ol">
+<li><a id="orgd1a0160"></a><span class="done DONE">DONE</span> Bearbeitung der Signaturen<br />
+<div class="outline-text-5" id="text-2-2-5-1">
+<p>
+Nachdem im Zielholding ja nur die Grundsignatur steht, würde diese
+Information verloren gehen. Daher schreiben wir sie in die Alternative
+Signatur des Exemplars.
+</p>
+
+<p>
+Damit eine etwaig schon vorhandene alternative Signatur nicht
+überschrieben wird, prüfen wir vorher, ob dort schon eine HB-Signatur
+vorhanden ist. Wenn ja, wird die Signatur aus dem Holding nach <code>" ; "</code>
+eingefügt.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python" id="org3a408c4"><span style="color: #FD971F;">alt_call_nr</span> = clean_cn<span style="color: #AE81FF;">(</span>item<span style="color: #66D9EF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #66D9EF;">][</span><span style="color: #E6DB74;">"alternative_call_number"</span><span style="color: #66D9EF;">]</span><span style="color: #AE81FF;">)</span>
+<span style="color: #FD971F;">hol_call_nr</span> = clean_cn<span style="color: #AE81FF;">(</span>item<span style="color: #66D9EF;">[</span><span style="color: #E6DB74;">"holding_data"</span><span style="color: #66D9EF;">][</span><span style="color: #E6DB74;">"call_number"</span><span style="color: #66D9EF;">]</span><span style="color: #AE81FF;">)</span>
+
+<span style="color: #75715E;"># </span><span style="color: #75715E;">check if the alternative call number is empty</span>
+<span style="color: #F92672;">if</span> alt_call_nr == <span style="color: #E6DB74;">""</span>:
+    item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"alternative_call_number"</span><span style="color: #AE81FF;">]</span> = hol_call_nr
+    item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"alternative_call_number_type"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"value"</span><span style="color: #AE81FF;">]</span> = <span style="color: #AE81FF;">8</span>
+    item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"alternative_call_number_type"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"desc"</span><span style="color: #AE81FF;">]</span> = <span style="color: #E6DB74;">"Other scheme"</span>
+<span style="color: #F92672;">elif</span> <span style="color: #E6DB74;">" ; "</span> <span style="color: #F92672;">in</span> alt_call_nr <span style="color: #F92672;">or</span> hol_call_nr <span style="color: #F92672;">in</span> alt_call_nr:
+    <span style="color: #F92672;">pass</span>
+<span style="color: #F92672;">else</span>:
+    item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"alternative_call_number"</span><span style="color: #AE81FF;">]</span> = f<span style="color: #E6DB74;">"{alt_call_nr} ; {hol_call_nr}"</span>
+</pre>
+</div>
+</div>
+</li>
+<li><a id="org2171d2f"></a><span class="done DONE">DONE</span> Signaturen putzen<br />
+<div class="outline-text-5" id="text-2-2-5-2">
+<p>
+Nachdem die Daten eine Geschichte haben, kommen Signaturen manchmal mit
+&bdquo;/&ldquo; als Trennzeichen oder auch mit &bdquo;,&ldquo; daher. Wo wir schon dabei sind,
+versuchen wir, das zu vereinheitlichen:
+</p>
+<div class="org-src-container">
+<pre class="src src-python" id="orgbcd9bc8"><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">clean_cn</span><span style="color: #AE81FF;">(</span>cn<span style="color: #AE81FF;">)</span>:
+         <span style="color: #E6DB74;">"""Return call numbers with '/' as delimiter after base call number"""</span>
+         <span style="color: #75715E;"># </span><span style="color: #75715E;">matches correct prefixes only</span>
+         <span style="color: #FD971F;">match</span> = re.match<span style="color: #AE81FF;">(</span>r<span style="color: #E6DB74;">'(^I{1,3}V?,?(?:I{1,3}V?)? [0-9]+)(, ?)(.*$)'</span>, cn<span style="color: #AE81FF;">)</span>
+         <span style="color: #75715E;"># </span><span style="color: #75715E;">matches all prefixes</span>
+         <span style="color: #75715E;"># </span><span style="color: #75715E;">match = re.match(r'(^[IV,]+? [0-9]+)(, ?)(.*$)', cn)</span>
+         <span style="color: #F92672;">if</span> match:
+             <span style="color: #F92672;">print</span><span style="color: #AE81FF;">(</span>match.groups<span style="color: #66D9EF;">()</span><span style="color: #AE81FF;">)</span>
+             <span style="color: #FD971F;">cn</span> = match<span style="color: #AE81FF;">[</span><span style="color: #AE81FF;">1</span><span style="color: #AE81FF;">]</span> + <span style="color: #E6DB74;">"/"</span> + match<span style="color: #AE81FF;">[</span><span style="color: #AE81FF;">3</span><span style="color: #AE81FF;">]</span>
+         <span style="color: #F92672;">return</span> cn
+</pre>
+</div>
+</div>
+</li>
+
+<li><a id="org97fcb05"></a><span class="done DONE">DONE</span> Exemplarstatus leeren<br />
+<div class="outline-text-5" id="text-2-2-5-3">
+<p>
+Wir nutzen diese Gelegenheit auch gleich, um den Exemplarstatus zu
+löschen, der bei diesen Items in Alma nicht mehr notwendig ist.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python" id="orgf0b1142">item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"policy"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"desc"</span><span style="color: #AE81FF;">]</span> == <span style="color: #AE81FF;">None</span>
+item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"policy"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"value"</span><span style="color: #AE81FF;">]</span> == <span style="color: #E6DB74;">''</span>
+</pre>
+</div>
+</div>
+</li>
+
+<li><a id="orgffe7a38"></a><span class="done DONE">DONE</span> Zusammensetzen der einzelnen Änderungen zu einer Funktion<br />
+<div class="outline-text-5" id="text-2-2-5-4">
+<p>
+Damit die einzelnen Änderungen im Script ein bisschen übersichtlicher
+zusammengefasst sind, ziehen wir sie in eine Funktion
+<code>change_item_information()</code> zusammen, die wir dann während der
+Bearbeitung aufrufen.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python" id="orgd84e527"><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">change_item_information</span><span style="color: #AE81FF;">(</span>item<span style="color: #AE81FF;">)</span>:
+    <span style="color: #E6DB74;">"""Make all necessary changes to the item object"""</span>
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">Set the alternative call number</span>
+    <span style="color: #FD971F;">alt_call_nr</span> = clean_cn<span style="color: #AE81FF;">(</span>item<span style="color: #66D9EF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #66D9EF;">][</span><span style="color: #E6DB74;">"alternative_call_number"</span><span style="color: #66D9EF;">]</span><span style="color: #AE81FF;">)</span>
+    <span style="color: #FD971F;">hol_call_nr</span> = clean_cn<span style="color: #AE81FF;">(</span>item<span style="color: #66D9EF;">[</span><span style="color: #E6DB74;">"holding_data"</span><span style="color: #66D9EF;">][</span><span style="color: #E6DB74;">"call_number"</span><span style="color: #66D9EF;">]</span><span style="color: #AE81FF;">)</span>
+
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">check if the alternative call number is empty</span>
+    <span style="color: #F92672;">if</span> alt_call_nr == <span style="color: #E6DB74;">""</span>:
+        item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"alternative_call_number"</span><span style="color: #AE81FF;">]</span> = hol_call_nr
+        item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"alternative_call_number_type"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"value"</span><span style="color: #AE81FF;">]</span> = <span style="color: #AE81FF;">8</span>
+        item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"alternative_call_number_type"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"desc"</span><span style="color: #AE81FF;">]</span> = <span style="color: #E6DB74;">"Other scheme"</span>
+    <span style="color: #F92672;">elif</span> <span style="color: #E6DB74;">" ; "</span> <span style="color: #F92672;">in</span> alt_call_nr <span style="color: #F92672;">or</span> hol_call_nr <span style="color: #F92672;">in</span> alt_call_nr:
+        <span style="color: #F92672;">pass</span>
+    <span style="color: #F92672;">else</span>:
+        item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"alternative_call_number"</span><span style="color: #AE81FF;">]</span> = f<span style="color: #E6DB74;">"{alt_call_nr} ; {hol_call_nr}"</span>
+
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">clear the item policy</span>
+    item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"policy"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"desc"</span><span style="color: #AE81FF;">]</span> == <span style="color: #AE81FF;">None</span>
+    item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"policy"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"value"</span><span style="color: #AE81FF;">]</span> == <span style="color: #E6DB74;">''</span>
+    <span style="color: #F92672;">return</span> item
+</pre>
+</div>
+</div>
+</li>
+</ol>
+</div>
+
+<div id="outline-container-org1a9a937" class="outline-4">
+<h4 id="org1a9a937"><span class="section-number-4">2.2.6</span> <span class="done DONE">DONE</span> Items umhängen und Holdings löschen</h4>
+<div class="outline-text-4" id="text-2-2-6">
+<p>
+Das Umhängen des Exemplars sollte der letzte Schritt sein. Vorher sollten
+alle Checks laufen und das Item entsprechend angepasst werden (z. B. die
+HOL-Signatur in die <code>alternative_call_number</code> schreiben).
+</p>
+
+<p>
+Um ein Exemplar umzuhängen, muss man es erst löschen und dann am
+Zielholding anhängen. Zuerst löschen deswegen, weil sonst der Barcode
+schon vorhanden ist und einen Error verursacht.
+</p>
+
+<p>
+Um ein Exemplar also umzuhängen, sind folgende Schritte notwendig:
+</p>
+<ol class="org-ol">
+<li>Das Exemplar sichern. Das sollten wir ohnehin beim Abrufen der
+Exemplare schon gemacht haben. Die nötigen Funktionen finden sich im
+<a href="#org4024dc4">entsprechenden Kapitel</a>.</li>
+<li>Das Exemplar via DELETE-request löschen. Wir übergeben den Parameter
+&bdquo;holdings=delete&ldquo;, um das Holding gleich mit zu löschen.</li>
+<li>Das Exemplar mit einem POST-request ans Zielholding hängen.</li>
+</ol>
+
+<p>
+Der erste Schritt, wird oben abgearbeitet, die beiden weiteren werden in
+der Funktion <code>move_item()</code> abgehandelt:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python" id="org5cd3ce3"><span style="color: #F92672;">def</span> <span style="color: #A6E22E;">move_item</span><span style="color: #AE81FF;">(</span>item, bib_mms, target_hol_id<span style="color: #AE81FF;">)</span>:
+    <span style="color: #E6DB74;">"""Move items to other holding and delete source-holding"""</span>
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">delete the items, but prevent the target-hol from being deleted</span>
+    <span style="color: #FD971F;">barcode</span> = item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"barcode"</span><span style="color: #AE81FF;">]</span>
+    <span style="color: #FD971F;">title</span> = item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"bib_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"title"</span><span style="color: #AE81FF;">]</span>
+    <span style="color: #FD971F;">target</span> = item_api.<span style="color: #F92672;">format</span><span style="color: #AE81FF;">(</span>mms_id=bib_mms, holding_id=target_hol_id<span style="color: #AE81FF;">)</span>
+    <span style="color: #F92672;">if</span> <span style="color: #F92672;">not</span> target_hol_id <span style="color: #F92672;">in</span> item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"link"</span><span style="color: #AE81FF;">]</span>:
+        logger.debug<span style="color: #AE81FF;">(</span>f<span style="color: #E6DB74;">"move_item(): l&#246;sche {barcode}"</span><span style="color: #AE81FF;">)</span>
+        <span style="color: #FD971F;">delete_item_response</span> = session.delete<span style="color: #AE81FF;">(</span>item<span style="color: #66D9EF;">[</span><span style="color: #E6DB74;">"link"</span><span style="color: #66D9EF;">]</span>, params=<span style="color: #66D9EF;">{</span><span style="color: #E6DB74;">"holdings"</span>: <span style="color: #E6DB74;">"delete"</span><span style="color: #66D9EF;">}</span><span style="color: #AE81FF;">)</span>
+    <span style="color: #F92672;">else</span>:
+        logger.debug<span style="color: #AE81FF;">(</span>f<span style="color: #E6DB74;">"move_item(): l&#246;sche {barcode}"</span><span style="color: #AE81FF;">)</span>
+        <span style="color: #FD971F;">delete_item_response</span> = session.delete<span style="color: #AE81FF;">(</span>item<span style="color: #66D9EF;">[</span><span style="color: #E6DB74;">"link"</span><span style="color: #66D9EF;">]</span>, params=<span style="color: #66D9EF;">{</span><span style="color: #E6DB74;">"holdings"</span>: <span style="color: #E6DB74;">"retain"</span><span style="color: #66D9EF;">}</span><span style="color: #AE81FF;">)</span>
+
+    <span style="color: #F92672;">if</span> <span style="color: #F92672;">not</span> delete_item_response.status_code == <span style="color: #AE81FF;">204</span>:
+        logger.error<span style="color: #AE81FF;">(</span>f<span style="color: #E6DB74;">"move_item(): l&#246;schen fehlgeschlagen bei {barcode}. {delete_item_response.text}"</span><span style="color: #AE81FF;">)</span>
+        <span style="color: #F92672;">return</span>
+
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">post the item. Wait for 1 second before that, so that Alma can update the</span>
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">barcode index. Try again, if barcode index is not updated.</span>
+    sleep<span style="color: #AE81FF;">(</span><span style="color: #AE81FF;">1</span><span style="color: #AE81FF;">)</span>
+    <span style="color: #FD971F;">tries</span> = <span style="color: #AE81FF;">0</span>
+    logger.debug<span style="color: #AE81FF;">(</span>f<span style="color: #E6DB74;">"move_item(): POST von {barcode}"</span><span style="color: #AE81FF;">)</span>
+    <span style="color: #FD971F;">post_item_response</span> = session.post<span style="color: #AE81FF;">(</span>target, json=item<span style="color: #AE81FF;">)</span>.json<span style="color: #AE81FF;">()</span>
+    <span style="color: #F92672;">while</span> <span style="color: #E6DB74;">"errorsExist"</span> <span style="color: #F92672;">in</span> post_item_response:
+        <span style="color: #F92672;">if</span> tries &gt; <span style="color: #AE81FF;">5</span>:
+            <span style="color: #FD971F;">error</span> = post_item_response<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"errorList"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"error"</span><span style="color: #AE81FF;">][</span><span style="color: #AE81FF;">0</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"errorMessage"</span><span style="color: #AE81FF;">]</span>
+            <span style="color: #75715E;"># </span><span style="color: #75715E;">errors.append([bib_mms, barcode, title, error])</span>
+            logger.error<span style="color: #AE81FF;">(</span>f<span style="color: #E6DB74;">"move_item(): {barcode} F&#252;nfter POST-Versuch fehlgeschlagen, Abbruch."</span><span style="color: #AE81FF;">)</span>
+            <span style="color: #F92672;">break</span>
+        <span style="color: #F92672;">elif</span> post_item_response<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"errorList"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"error"</span><span style="color: #AE81FF;">][</span><span style="color: #AE81FF;">0</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"errorCode"</span><span style="color: #AE81FF;">]</span> == <span style="color: #E6DB74;">"401873"</span>:
+            <span style="color: #75715E;"># </span><span style="color: #75715E;">if the error is an existing barcode, try again</span>
+            logger.info<span style="color: #AE81FF;">(</span>f<span style="color: #E6DB74;">"move_item(): {barcode}: weiterer POST-Versuch ({tries + 1}x)"</span><span style="color: #AE81FF;">)</span>
+            sleep<span style="color: #AE81FF;">(</span><span style="color: #AE81FF;">1</span><span style="color: #AE81FF;">)</span>
+            <span style="color: #FD971F;">post_item_response</span> = session.post<span style="color: #AE81FF;">(</span>target, json=item<span style="color: #AE81FF;">)</span>.json<span style="color: #AE81FF;">()</span>
+            <span style="color: #FD971F;">tries</span> += <span style="color: #AE81FF;">1</span>
+        <span style="color: #F92672;">else</span>:
+            <span style="color: #FD971F;">error</span> = post_item_response<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"errorList"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"error"</span><span style="color: #AE81FF;">][</span><span style="color: #AE81FF;">0</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"errorMessage"</span><span style="color: #AE81FF;">]</span>
+            <span style="color: #AE81FF;">(</span>f<span style="color: #E6DB74;">"move_item(): unerwarteter Fehler bei POST {error}"</span><span style="color: #AE81FF;">)</span>
+            <span style="color: #F92672;">break</span>
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org19dfa19" class="outline-3">
+<h3 id="org19dfa19"><span class="section-number-3">2.3</span> Alles Zusammensetzen</h3>
+<div class="outline-text-3" id="text-2-3">
+</div>
+<div id="outline-container-orgd9ceee6" class="outline-4">
+<h4 id="orgd9ceee6"><span class="section-number-4">2.3.1</span> Das Modul</h4>
+<div class="outline-text-4" id="text-2-3-1">
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #F92672;">import</span> sys
+<span style="color: #F92672;">import</span> re
+<span style="color: #F92672;">import</span> os
+<span style="color: #F92672;">import</span> keyring
+<span style="color: #F92672;">import</span> datetime
+<span style="color: #F92672;">from</span> requests <span style="color: #F92672;">import</span> Session
+<span style="color: #F92672;">import</span> urllib.parse
+<span style="color: #F92672;">import</span> xml.etree.ElementTree <span style="color: #F92672;">as</span> ET
+<span style="color: #F92672;">import</span> json
+<span style="color: #F92672;">from</span> time <span style="color: #F92672;">import</span> sleep
+<span style="color: #F92672;">from</span> easygui <span style="color: #F92672;">import</span> multenterbox
+<span style="color: #F92672;">import</span> logging
+<span style="color: #F92672;">import</span> getpass
+
+<span style="color: #75715E;"># </span><span style="color: #75715E;">Get the users input</span>
+<span style="color: #F92672;">def</span> <span style="color: #A6E22E;">get_mmsids</span><span style="color: #AE81FF;">(</span>msg=<span style="color: #E6DB74;">""</span><span style="color: #AE81FF;">)</span>:
+    <span style="color: #E6DB74;">"""Return the MMS-IDs of the bibrecord and the target-holding."""</span>
+
+    <span style="color: #F92672;">if</span> msg == <span style="color: #E6DB74;">""</span>:
+        <span style="color: #FD971F;">msg</span> =  <span style="color: #E6DB74;">"Bitte folgende Daten eingeben."</span>
+    <span style="color: #F92672;">else</span>:
+        <span style="color: #FD971F;">msg</span> = msg
+
+    <span style="color: #FD971F;">bib_mms</span>, <span style="color: #FD971F;">target_hol_id</span> = multenterbox<span style="color: #AE81FF;">(</span>msg=msg,
+                                           title=<span style="color: #E6DB74;">"Multi-HOL-Bereinigung"</span>,
+                                           fields=<span style="color: #66D9EF;">[</span><span style="color: #E6DB74;">"MMS-ID des Bibsatzes"</span>, <span style="color: #E6DB74;">"MMS-ID des Zielholdings"</span><span style="color: #66D9EF;">]</span><span style="color: #AE81FF;">)</span>
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">check the input</span>
+    <span style="color: #F92672;">if</span> <span style="color: #AE81FF;">(</span><span style="color: #F92672;">not</span> bib_mms.startswith<span style="color: #66D9EF;">(</span><span style="color: #E6DB74;">"99"</span><span style="color: #66D9EF;">)</span>
+            <span style="color: #F92672;">or</span> <span style="color: #F92672;">not</span> bib_mms.endswith<span style="color: #66D9EF;">(</span><span style="color: #E6DB74;">"3339"</span><span style="color: #66D9EF;">)</span>
+            <span style="color: #F92672;">or</span> <span style="color: #F92672;">not</span> target_hol_id.startswith<span style="color: #66D9EF;">(</span><span style="color: #E6DB74;">"22"</span><span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span>:
+        <span style="color: #FD971F;">msg</span> = <span style="color: #E6DB74;">"""*** Formaler Fehler in der Eingabe ***</span>
+
+<span style="color: #E6DB74;">    1. Die MMS-ID des Bibsatzes muss mit "99" beginnen</span>
+<span style="color: #E6DB74;">    2. Die MMS-ID des Bibsatzes muss mit "3339" enden</span>
+<span style="color: #E6DB74;">    3. Die MMS-ID des HOL-Satzes muss mit "22" beginnen</span>
+<span style="color: #E6DB74;">"""</span>
+        get_mmsids<span style="color: #AE81FF;">(</span>msg<span style="color: #AE81FF;">)</span>
+    <span style="color: #F92672;">else</span>:
+        <span style="color: #F92672;">return</span> bib_mms, target_hol_id
+
+<span style="color: #75715E;"># </span><span style="color: #75715E;">set up the backup</span>
+<span style="color: #FD971F;">backup_dir</span> = os.path.join<span style="color: #AE81FF;">(</span>os.path.expanduser<span style="color: #66D9EF;">(</span><span style="color: #E6DB74;">"~"</span><span style="color: #66D9EF;">)</span>, <span style="color: #E6DB74;">"Dokumente"</span>, <span style="color: #E6DB74;">"ALMA_multi-hol"</span><span style="color: #AE81FF;">)</span>
+<span style="color: #75715E;"># </span><span style="color: #75715E;">make the directory if it does not exist</span>
+<span style="color: #F92672;">if</span> <span style="color: #F92672;">not</span> os.path.exists<span style="color: #AE81FF;">(</span>backup_dir<span style="color: #AE81FF;">)</span>:
+    os.makedirs<span style="color: #AE81FF;">(</span>backup_dir<span style="color: #AE81FF;">)</span>
+<span style="color: #75715E;">#</span><span style="color: #75715E;">configure logging</span>
+<span style="color: #F92672;">def</span> <span style="color: #A6E22E;">logging_setup</span><span style="color: #AE81FF;">(</span>bib_mms, target_hol_id<span style="color: #AE81FF;">)</span>:
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")</span>
+    <span style="color: #FD971F;">log_file</span> = os.path.join<span style="color: #AE81FF;">(</span>backup_dir, f<span style="color: #E6DB74;">"{bib_mms}_{target_hol_id}.log"</span><span style="color: #AE81FF;">)</span>
+    <span style="color: #FD971F;">logger</span> = logging.getLogger<span style="color: #AE81FF;">(</span><span style="color: #F92672;">__name__</span><span style="color: #AE81FF;">)</span>
+    logger.setLevel<span style="color: #AE81FF;">(</span>logging.DEBUG<span style="color: #AE81FF;">)</span>
+    <span style="color: #FD971F;">logger.propagate</span> = <span style="color: #AE81FF;">False</span>
+
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">add handlers</span>
+    <span style="color: #FD971F;">log_stream_handler</span> = logging.StreamHandler<span style="color: #AE81FF;">(</span>sys.stdout<span style="color: #AE81FF;">)</span>
+    log_stream_handler.setLevel<span style="color: #AE81FF;">(</span>logging.INFO<span style="color: #AE81FF;">)</span>
+    log_stream_handler.setFormatter<span style="color: #AE81FF;">(</span>
+        logging.Formatter<span style="color: #66D9EF;">(</span><span style="color: #E6DB74;">'%(levelname)s: %(message)s'</span><span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span>
+    logger.addHandler<span style="color: #AE81FF;">(</span>log_stream_handler<span style="color: #AE81FF;">)</span>
+
+    <span style="color: #FD971F;">log_file_handler</span> = logging.FileHandler<span style="color: #AE81FF;">(</span>log_file<span style="color: #AE81FF;">)</span>
+    log_file_handler.setLevel<span style="color: #AE81FF;">(</span>logging.DEBUG<span style="color: #AE81FF;">)</span>
+    log_file_handler.setFormatter<span style="color: #AE81FF;">(</span>
+        logging.Formatter<span style="color: #66D9EF;">(</span><span style="color: #E6DB74;">'%(asctime)s - %(levelname)s - %(message)s'</span><span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span>
+    logger.addHandler<span style="color: #AE81FF;">(</span>log_file_handler<span style="color: #AE81FF;">)</span>
+
+    <span style="color: #F92672;">return</span> logger
+
+<span style="color: #75715E;"># </span><span style="color: #75715E;">get everything ready for making the API-Calls</span>
+<span style="color: #75715E;"># </span><span style="color: #75715E;">api-url-templates</span>
+<span style="color: #FD971F;">base_url</span> = <span style="color: #E6DB74;">'https://api-eu.hosted.exlibrisgroup.com/almaws/v1'</span>
+<span style="color: #FD971F;">barcode_api</span> = base_url + <span style="color: #E6DB74;">"/items?item_barcode={barcode}"</span>
+<span style="color: #FD971F;">holdings_api</span> = base_url + <span style="color: #E6DB74;">"/bibs/{mms_id}/holdings"</span>
+<span style="color: #FD971F;">bib_api</span> = base_url + <span style="color: #E6DB74;">"/bibs/{mms_id}"</span>
+<span style="color: #FD971F;">item_api</span> = base_url + <span style="color: #E6DB74;">"/bibs/{mms_id}/holdings/{holding_id}/items"</span>
+<span style="color: #75715E;"># </span><span style="color: #75715E;">get api key from system keyring</span>
+<span style="color: #FD971F;">api_key</span> = keyring.get_password<span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"ALMA-API"</span>, <span style="color: #E6DB74;">"BIB-Sandbox"</span><span style="color: #AE81FF;">)</span>.rstrip<span style="color: #AE81FF;">()</span>
+<span style="color: #75715E;"># </span><span style="color: #75715E;">session um immer gleiche header zu schicken etc.</span>
+<span style="color: #FD971F;">session</span> = Session<span style="color: #AE81FF;">()</span>
+session.headers.update<span style="color: #AE81FF;">(</span><span style="color: #66D9EF;">{</span>
+    <span style="color: #E6DB74;">"accept"</span>: <span style="color: #E6DB74;">"application/json"</span>,
+    <span style="color: #E6DB74;">"authorization"</span>: f<span style="color: #E6DB74;">"apikey {api_key}"</span>
+<span style="color: #66D9EF;">}</span><span style="color: #AE81FF;">)</span>
+
+<span style="color: #75715E;"># </span><span style="color: #75715E;">function for backing up JSON to disk</span>
+<span style="color: #F92672;">def</span> <span style="color: #A6E22E;">save_json</span><span style="color: #AE81FF;">(</span>json_list, filename, count=<span style="color: #AE81FF;">1</span><span style="color: #AE81FF;">)</span>:
+    <span style="color: #E6DB74;">"""Save JSON-file with a list of items to disk.</span>
+
+<span style="color: #E6DB74;">    Takes a list of JSON-objects."""</span>
+
+    <span style="color: #FD971F;">fname</span> = f<span style="color: #E6DB74;">"{filename}_{count}.json"</span>
+    <span style="color: #F92672;">try</span>:
+        <span style="color: #F92672;">with</span> <span style="color: #F92672;">open</span><span style="color: #AE81FF;">(</span>fname, <span style="color: #E6DB74;">"x"</span><span style="color: #AE81FF;">)</span> <span style="color: #F92672;">as</span> backup:
+            backup.write<span style="color: #AE81FF;">(</span>json.dumps<span style="color: #66D9EF;">(</span>json_list<span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span>
+    <span style="color: #F92672;">except</span> FileExistsError:
+        save_json<span style="color: #AE81FF;">(</span>json_list, filename, count + <span style="color: #AE81FF;">1</span><span style="color: #AE81FF;">)</span>
+
+<span style="color: #75715E;"># </span><span style="color: #75715E;">functions for checking the api-responses</span>
+<span style="color: #F92672;">def</span> <span style="color: #A6E22E;">get_bch</span><span style="color: #AE81FF;">(</span>holding_id<span style="color: #AE81FF;">)</span>:
+    <span style="color: #FD971F;">hol</span> = session.get<span style="color: #AE81FF;">(</span>holdings_api + <span style="color: #E6DB74;">"/"</span> + holding_id, headers = <span style="color: #66D9EF;">{</span><span style="color: #E6DB74;">"accept"</span>: <span style="color: #E6DB74;">"application/xml"</span><span style="color: #66D9EF;">}</span><span style="color: #AE81FF;">)</span>
+    <span style="color: #F92672;">try</span>:
+        <span style="color: #FD971F;">holxml</span> = ET.fromstring<span style="color: #AE81FF;">(</span>hol.text<span style="color: #AE81FF;">)</span>
+        <span style="color: #FD971F;">b</span> = holxml.find<span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">'.//*[@tag="852"]/*[@code="b"]'</span><span style="color: #AE81FF;">)</span>.text
+        <span style="color: #FD971F;">c</span> = holxml.find<span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">'.//*[@tag="852"]/*[@code="c"]'</span><span style="color: #AE81FF;">)</span>.text
+        <span style="color: #FD971F;">h</span> = holxml.find<span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">'.//*[@tag="852"]/*[@code="h"]'</span><span style="color: #AE81FF;">)</span>.text
+    <span style="color: #F92672;">except</span>:
+        logger.exception<span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"Fehler beim Lesen des Zielholdings (XML)."</span><span style="color: #AE81FF;">)</span>
+        <span style="color: #F92672;">print</span><span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"Ein Fehler ist aufgetreten. Kontrollieren Sie die Log-Datei."</span><span style="color: #AE81FF;">)</span>
+        <span style="color: #F92672;">input</span><span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"Dr&#252;cken Sie ENTER um das Programm zu beenden."</span><span style="color: #AE81FF;">)</span>
+        sys.<span style="color: #AE81FF;">exit</span><span style="color: #AE81FF;">(</span><span style="color: #AE81FF;">1</span><span style="color: #AE81FF;">)</span>
+
+    <span style="color: #F92672;">return</span> b, c, h
+<span style="color: #75715E;"># </span><span style="color: #75715E;">check if the item fits the target holding's 852 b, c and h</span>
+
+<span style="color: #F92672;">def</span> <span style="color: #A6E22E;">check_bch</span><span style="color: #AE81FF;">(</span>item, hol_bch<span style="color: #AE81FF;">)</span>:
+    <span style="color: #E6DB74;">"""Check if the item fits the target holdings library, location and call number.</span>
+
+<span style="color: #E6DB74;">    Take an item object (dict) and return True or False."""</span>
+
+    <span style="color: #FD971F;">hol_b</span>, <span style="color: #FD971F;">hol_c</span>, <span style="color: #FD971F;">hol_h</span> = hol_bch
+
+    <span style="color: #FD971F;">item_b</span> = item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"library"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"value"</span><span style="color: #AE81FF;">]</span>
+    <span style="color: #FD971F;">item_c</span> = item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"location"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"value"</span><span style="color: #AE81FF;">]</span>
+    <span style="color: #FD971F;">item_h</span> = item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"holding_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"call_number"</span><span style="color: #AE81FF;">]</span>
+    <span style="color: #FD971F;">item_alt</span> = item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"alternative_call_number"</span><span style="color: #AE81FF;">]</span>
+    <span style="color: #FD971F;">item_h_from_alt</span> = re.sub<span style="color: #AE81FF;">(</span>r<span style="color: #E6DB74;">"^.* ; "</span>, <span style="color: #E6DB74;">""</span>, item_alt<span style="color: #AE81FF;">)</span>
+
+    <span style="color: #FD971F;">bch_check</span> = <span style="color: #AE81FF;">[</span><span style="color: #AE81FF;">False</span>, <span style="color: #AE81FF;">False</span>, <span style="color: #AE81FF;">False</span><span style="color: #AE81FF;">]</span>
+
+    <span style="color: #F92672;">if</span> hol_b == item_b:
+        <span style="color: #FD971F;">bch_check</span><span style="color: #AE81FF;">[</span><span style="color: #AE81FF;">0</span><span style="color: #AE81FF;">]</span> = <span style="color: #AE81FF;">True</span>
+
+    <span style="color: #F92672;">if</span> hol_c == item_c:
+        <span style="color: #FD971F;">bch_check</span><span style="color: #AE81FF;">[</span><span style="color: #AE81FF;">1</span><span style="color: #AE81FF;">]</span> = <span style="color: #AE81FF;">True</span>
+
+    <span style="color: #F92672;">if</span> item_h.startswith<span style="color: #AE81FF;">(</span>hol_h<span style="color: #AE81FF;">)</span>:
+        <span style="color: #FD971F;">bch_check</span><span style="color: #AE81FF;">[</span><span style="color: #AE81FF;">2</span><span style="color: #AE81FF;">]</span> = <span style="color: #AE81FF;">True</span>
+    <span style="color: #F92672;">elif</span> item_h_from_alt.startswith<span style="color: #AE81FF;">(</span>hol_h<span style="color: #AE81FF;">)</span>:
+        <span style="color: #75715E;"># </span><span style="color: #75715E;">if the item has already been moved to a false holding because the false</span>
+        <span style="color: #75715E;"># </span><span style="color: #75715E;">call number is a substring of the right one</span>
+        <span style="color: #FD971F;">bch_check</span><span style="color: #AE81FF;">[</span><span style="color: #AE81FF;">2</span><span style="color: #AE81FF;">]</span> = <span style="color: #AE81FF;">True</span>
+
+    <span style="color: #F92672;">if</span> <span style="color: #AE81FF;">False</span> <span style="color: #F92672;">in</span> bch_check:
+        <span style="color: #F92672;">return</span> <span style="color: #AE81FF;">False</span>
+    <span style="color: #F92672;">else</span>:
+        <span style="color: #F92672;">return</span> <span style="color: #AE81FF;">True</span>
+
+<span style="color: #75715E;"># </span><span style="color: #75715E;">Get the items</span>
+<span style="color: #F92672;">def</span> <span style="color: #A6E22E;">get_items</span><span style="color: #AE81FF;">(</span>mms_id, target_hol_id<span style="color: #AE81FF;">)</span>:
+    <span style="color: #FD971F;">mms_id</span> = mms_id
+    <span style="color: #FD971F;">outlist</span> = <span style="color: #AE81FF;">[]</span>
+    <span style="color: #FD971F;">hol_bch</span> = get_bch<span style="color: #AE81FF;">(</span>target_hol_id<span style="color: #AE81FF;">)</span>
+
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">get the item-list from Alma</span>
+    <span style="color: #FD971F;">item_list</span> = session.get<span style="color: #AE81FF;">(</span>item_api.<span style="color: #F92672;">format</span><span style="color: #66D9EF;">(</span>mms_id=mms_id, holding_id=<span style="color: #E6DB74;">"ALL"</span><span style="color: #66D9EF;">)</span>,
+                            params=<span style="color: #66D9EF;">{</span><span style="color: #E6DB74;">"limit"</span>: <span style="color: #E6DB74;">"100"</span><span style="color: #66D9EF;">}</span><span style="color: #AE81FF;">)</span>
+
+    <span style="color: #75715E;"># </span><span style="color: #afd8af;">DONE</span><span style="color: #75715E;"> check response</span>
+    <span style="color: #F92672;">if</span> item_list.status_code == <span style="color: #AE81FF;">200</span>:
+        <span style="color: #FD971F;">item_list</span> = item_list.json<span style="color: #AE81FF;">()</span>
+    <span style="color: #F92672;">else</span>:
+        logger.error<span style="color: #AE81FF;">(</span>f<span style="color: #E6DB74;">"Fehler beim Holen der Daten: {item_list.text}"</span><span style="color: #AE81FF;">)</span>
+        <span style="color: #F92672;">input</span><span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"Dr&#252;cken Sie ENTER um das Programm zu beenden."</span><span style="color: #AE81FF;">)</span>
+        sys.<span style="color: #AE81FF;">exit</span><span style="color: #AE81FF;">(</span><span style="color: #AE81FF;">1</span><span style="color: #AE81FF;">)</span>
+
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">append the items to the list to be returned, if they pass the tests</span>
+    logger.debug<span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"get_items(): Items zur outlist hinzuf&#252;gen"</span><span style="color: #AE81FF;">)</span>
+    <span style="color: #F92672;">for</span> item <span style="color: #F92672;">in</span> item_list<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item"</span><span style="color: #AE81FF;">]</span>:
+        <span style="color: #F92672;">if</span> check_bch<span style="color: #AE81FF;">(</span>item, hol_bch<span style="color: #AE81FF;">)</span>:
+            outlist.append<span style="color: #AE81FF;">(</span>item<span style="color: #AE81FF;">)</span>
+
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">check if there are more than 100 items</span>
+    <span style="color: #FD971F;">total_record_count</span> = <span style="color: #F92672;">int</span><span style="color: #AE81FF;">(</span>item_list<span style="color: #66D9EF;">[</span><span style="color: #E6DB74;">"total_record_count"</span><span style="color: #66D9EF;">]</span><span style="color: #AE81FF;">)</span>
+    <span style="color: #F92672;">if</span> total_record_count &gt; <span style="color: #AE81FF;">100</span>:
+        <span style="color: #75715E;"># </span><span style="color: #75715E;">calculate number of needed additional calls</span>
+        <span style="color: #FD971F;">add_calls</span> = total_record_count // <span style="color: #AE81FF;">100</span>
+        logger.debug<span style="color: #AE81FF;">(</span>f<span style="color: #E6DB74;">"get_items(): {total_record_count} items vorhanden, {add_calls} weitere API-calls notwendig."</span><span style="color: #AE81FF;">)</span>
+        <span style="color: #75715E;"># </span><span style="color: #75715E;">make the additional calls and add answer to the outlist</span>
+        <span style="color: #F92672;">for</span> i <span style="color: #F92672;">in</span> <span style="color: #F92672;">range</span><span style="color: #AE81FF;">(</span>add_calls<span style="color: #AE81FF;">)</span>:
+            <span style="color: #FD971F;">offset</span> = <span style="color: #AE81FF;">(</span>i + <span style="color: #AE81FF;">1</span><span style="color: #AE81FF;">)</span> * <span style="color: #AE81FF;">100</span>
+            logger.debug<span style="color: #AE81FF;">(</span>f<span style="color: #E6DB74;">"get_items(): additional call {offset}"</span><span style="color: #AE81FF;">)</span>
+
+            <span style="color: #FD971F;">next_list</span> = session.get<span style="color: #AE81FF;">(</span>item_api.<span style="color: #F92672;">format</span><span style="color: #66D9EF;">(</span>mms_id=mms_id, holding_id=<span style="color: #E6DB74;">"ALL"</span><span style="color: #66D9EF;">)</span>,
+                                    params=<span style="color: #66D9EF;">{</span><span style="color: #E6DB74;">"limit"</span>: <span style="color: #E6DB74;">"100"</span>, <span style="color: #E6DB74;">"offset"</span>: offset<span style="color: #66D9EF;">}</span><span style="color: #AE81FF;">)</span>.json<span style="color: #AE81FF;">()</span>
+            logger.debug<span style="color: #AE81FF;">(</span>f<span style="color: #E6DB74;">"get_items(): weitere items zu outlist hinzuf&#252;gen (call {offset}/{add_calls})"</span><span style="color: #AE81FF;">)</span>
+            <span style="color: #F92672;">for</span> item <span style="color: #F92672;">in</span> next_list<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item"</span><span style="color: #AE81FF;">]</span>:
+                <span style="color: #F92672;">if</span> check_bch<span style="color: #AE81FF;">(</span>item, hol_bch<span style="color: #AE81FF;">)</span>:
+                    outlist.append<span style="color: #AE81FF;">(</span>item<span style="color: #AE81FF;">)</span>
+
+    <span style="color: #75715E;"># </span><span style="color: #afd8af;">DONE</span><span style="color: #75715E;"> save the item list to disk</span>
+    logger.info<span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"Schreibe Backup."</span><span style="color: #AE81FF;">)</span>
+    <span style="color: #FD971F;">backup_file</span> = os.path.join<span style="color: #AE81FF;">(</span>backup_dir, f<span style="color: #E6DB74;">"{mms_id}_{hol_bch[0]}_{hol_bch[1]}_{hol_bch[2].replace('.', '').replace(',', '').replace('/', '').replace(' ', '-')}"</span><span style="color: #AE81FF;">)</span>
+    save_json<span style="color: #AE81FF;">(</span>outlist, backup_file<span style="color: #AE81FF;">)</span>
+    <span style="color: #F92672;">return</span> outlist
+
+<span style="color: #75715E;"># </span><span style="color: #75715E;">Change item information like call numbers etc.</span>
+<span style="color: #F92672;">def</span> <span style="color: #A6E22E;">clean_cn</span><span style="color: #AE81FF;">(</span>cn<span style="color: #AE81FF;">)</span>:
+         <span style="color: #E6DB74;">"""Return call numbers with '/' as delimiter after base call number"""</span>
+         <span style="color: #75715E;"># </span><span style="color: #75715E;">matches correct prefixes only</span>
+         <span style="color: #FD971F;">match</span> = re.match<span style="color: #AE81FF;">(</span>r<span style="color: #E6DB74;">'(^I{1,3}V?,?(?:I{1,3}V?)? [0-9]+)(, ?)(.*$)'</span>, cn<span style="color: #AE81FF;">)</span>
+         <span style="color: #75715E;"># </span><span style="color: #75715E;">matches all prefixes</span>
+         <span style="color: #75715E;"># </span><span style="color: #75715E;">match = re.match(r'(^[IV,]+? [0-9]+)(, ?)(.*$)', cn)</span>
+         <span style="color: #F92672;">if</span> match:
+             <span style="color: #F92672;">print</span><span style="color: #AE81FF;">(</span>match.groups<span style="color: #66D9EF;">()</span><span style="color: #AE81FF;">)</span>
+             <span style="color: #FD971F;">cn</span> = match<span style="color: #AE81FF;">[</span><span style="color: #AE81FF;">1</span><span style="color: #AE81FF;">]</span> + <span style="color: #E6DB74;">"/"</span> + match<span style="color: #AE81FF;">[</span><span style="color: #AE81FF;">3</span><span style="color: #AE81FF;">]</span>
+         <span style="color: #F92672;">return</span> cn
+<span style="color: #F92672;">def</span> <span style="color: #A6E22E;">change_item_information</span><span style="color: #AE81FF;">(</span>item<span style="color: #AE81FF;">)</span>:
+    <span style="color: #E6DB74;">"""Make all necessary changes to the item object"""</span>
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">Set the alternative call number</span>
+    <span style="color: #FD971F;">alt_call_nr</span> = clean_cn<span style="color: #AE81FF;">(</span>item<span style="color: #66D9EF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #66D9EF;">][</span><span style="color: #E6DB74;">"alternative_call_number"</span><span style="color: #66D9EF;">]</span><span style="color: #AE81FF;">)</span>
+    <span style="color: #FD971F;">hol_call_nr</span> = clean_cn<span style="color: #AE81FF;">(</span>item<span style="color: #66D9EF;">[</span><span style="color: #E6DB74;">"holding_data"</span><span style="color: #66D9EF;">][</span><span style="color: #E6DB74;">"call_number"</span><span style="color: #66D9EF;">]</span><span style="color: #AE81FF;">)</span>
+
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">check if the alternative call number is empty</span>
+    <span style="color: #F92672;">if</span> alt_call_nr == <span style="color: #E6DB74;">""</span>:
+        item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"alternative_call_number"</span><span style="color: #AE81FF;">]</span> = hol_call_nr
+        item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"alternative_call_number_type"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"value"</span><span style="color: #AE81FF;">]</span> = <span style="color: #AE81FF;">8</span>
+        item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"alternative_call_number_type"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"desc"</span><span style="color: #AE81FF;">]</span> = <span style="color: #E6DB74;">"Other scheme"</span>
+    <span style="color: #F92672;">elif</span> <span style="color: #E6DB74;">" ; "</span> <span style="color: #F92672;">in</span> alt_call_nr <span style="color: #F92672;">or</span> hol_call_nr <span style="color: #F92672;">in</span> alt_call_nr:
+        <span style="color: #F92672;">pass</span>
+    <span style="color: #F92672;">else</span>:
+        item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"alternative_call_number"</span><span style="color: #AE81FF;">]</span> = f<span style="color: #E6DB74;">"{alt_call_nr} ; {hol_call_nr}"</span>
+
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">clear the item policy</span>
+    item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"policy"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"desc"</span><span style="color: #AE81FF;">]</span> == <span style="color: #AE81FF;">None</span>
+    item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"policy"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"value"</span><span style="color: #AE81FF;">]</span> == <span style="color: #E6DB74;">''</span>
+    <span style="color: #F92672;">return</span> item
+
+<span style="color: #75715E;"># </span><span style="color: #75715E;">Move the item to the target holding</span>
+<span style="color: #F92672;">def</span> <span style="color: #A6E22E;">move_item</span><span style="color: #AE81FF;">(</span>item, bib_mms, target_hol_id<span style="color: #AE81FF;">)</span>:
+    <span style="color: #E6DB74;">"""Move items to other holding and delete source-holding"""</span>
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">delete the items, but prevent the target-hol from being deleted</span>
+    <span style="color: #FD971F;">barcode</span> = item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"barcode"</span><span style="color: #AE81FF;">]</span>
+    <span style="color: #FD971F;">title</span> = item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"bib_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"title"</span><span style="color: #AE81FF;">]</span>
+    <span style="color: #FD971F;">target</span> = item_api.<span style="color: #F92672;">format</span><span style="color: #AE81FF;">(</span>mms_id=bib_mms, holding_id=target_hol_id<span style="color: #AE81FF;">)</span>
+    <span style="color: #F92672;">if</span> <span style="color: #F92672;">not</span> target_hol_id <span style="color: #F92672;">in</span> item<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"link"</span><span style="color: #AE81FF;">]</span>:
+        logger.debug<span style="color: #AE81FF;">(</span>f<span style="color: #E6DB74;">"move_item(): l&#246;sche {barcode}"</span><span style="color: #AE81FF;">)</span>
+        <span style="color: #FD971F;">delete_item_response</span> = session.delete<span style="color: #AE81FF;">(</span>item<span style="color: #66D9EF;">[</span><span style="color: #E6DB74;">"link"</span><span style="color: #66D9EF;">]</span>, params=<span style="color: #66D9EF;">{</span><span style="color: #E6DB74;">"holdings"</span>: <span style="color: #E6DB74;">"delete"</span><span style="color: #66D9EF;">}</span><span style="color: #AE81FF;">)</span>
+    <span style="color: #F92672;">else</span>:
+        logger.debug<span style="color: #AE81FF;">(</span>f<span style="color: #E6DB74;">"move_item(): l&#246;sche {barcode}"</span><span style="color: #AE81FF;">)</span>
+        <span style="color: #FD971F;">delete_item_response</span> = session.delete<span style="color: #AE81FF;">(</span>item<span style="color: #66D9EF;">[</span><span style="color: #E6DB74;">"link"</span><span style="color: #66D9EF;">]</span>, params=<span style="color: #66D9EF;">{</span><span style="color: #E6DB74;">"holdings"</span>: <span style="color: #E6DB74;">"retain"</span><span style="color: #66D9EF;">}</span><span style="color: #AE81FF;">)</span>
+
+    <span style="color: #F92672;">if</span> <span style="color: #F92672;">not</span> delete_item_response.status_code == <span style="color: #AE81FF;">204</span>:
+        logger.error<span style="color: #AE81FF;">(</span>f<span style="color: #E6DB74;">"move_item(): l&#246;schen fehlgeschlagen bei {barcode}. {delete_item_response.text}"</span><span style="color: #AE81FF;">)</span>
+        <span style="color: #F92672;">return</span>
+
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">post the item. Wait for 1 second before that, so that Alma can update the</span>
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">barcode index. Try again, if barcode index is not updated.</span>
+    sleep<span style="color: #AE81FF;">(</span><span style="color: #AE81FF;">1</span><span style="color: #AE81FF;">)</span>
+    <span style="color: #FD971F;">tries</span> = <span style="color: #AE81FF;">0</span>
+    logger.debug<span style="color: #AE81FF;">(</span>f<span style="color: #E6DB74;">"move_item(): POST von {barcode}"</span><span style="color: #AE81FF;">)</span>
+    <span style="color: #FD971F;">post_item_response</span> = session.post<span style="color: #AE81FF;">(</span>target, json=item<span style="color: #AE81FF;">)</span>.json<span style="color: #AE81FF;">()</span>
+    <span style="color: #F92672;">while</span> <span style="color: #E6DB74;">"errorsExist"</span> <span style="color: #F92672;">in</span> post_item_response:
+        <span style="color: #F92672;">if</span> tries &gt; <span style="color: #AE81FF;">5</span>:
+            <span style="color: #FD971F;">error</span> = post_item_response<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"errorList"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"error"</span><span style="color: #AE81FF;">][</span><span style="color: #AE81FF;">0</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"errorMessage"</span><span style="color: #AE81FF;">]</span>
+            <span style="color: #75715E;"># </span><span style="color: #75715E;">errors.append([bib_mms, barcode, title, error])</span>
+            logger.error<span style="color: #AE81FF;">(</span>f<span style="color: #E6DB74;">"move_item(): {barcode} F&#252;nfter POST-Versuch fehlgeschlagen, Abbruch."</span><span style="color: #AE81FF;">)</span>
+            <span style="color: #F92672;">break</span>
+        <span style="color: #F92672;">elif</span> post_item_response<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"errorList"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"error"</span><span style="color: #AE81FF;">][</span><span style="color: #AE81FF;">0</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"errorCode"</span><span style="color: #AE81FF;">]</span> == <span style="color: #E6DB74;">"401873"</span>:
+            <span style="color: #75715E;"># </span><span style="color: #75715E;">if the error is an existing barcode, try again</span>
+            logger.info<span style="color: #AE81FF;">(</span>f<span style="color: #E6DB74;">"move_item(): {barcode}: weiterer POST-Versuch ({tries + 1}x)"</span><span style="color: #AE81FF;">)</span>
+            sleep<span style="color: #AE81FF;">(</span><span style="color: #AE81FF;">1</span><span style="color: #AE81FF;">)</span>
+            <span style="color: #FD971F;">post_item_response</span> = session.post<span style="color: #AE81FF;">(</span>target, json=item<span style="color: #AE81FF;">)</span>.json<span style="color: #AE81FF;">()</span>
+            <span style="color: #FD971F;">tries</span> += <span style="color: #AE81FF;">1</span>
+        <span style="color: #F92672;">else</span>:
+            <span style="color: #FD971F;">error</span> = post_item_response<span style="color: #AE81FF;">[</span><span style="color: #E6DB74;">"errorList"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"error"</span><span style="color: #AE81FF;">][</span><span style="color: #AE81FF;">0</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"errorMessage"</span><span style="color: #AE81FF;">]</span>
+            <span style="color: #AE81FF;">(</span>f<span style="color: #E6DB74;">"move_item(): unerwarteter Fehler bei POST {error}"</span><span style="color: #AE81FF;">)</span>
+            <span style="color: #F92672;">break</span>
+
+<span style="color: #F92672;">def</span> <span style="color: #A6E22E;">main</span><span style="color: #AE81FF;">()</span>:
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">assign values to bib_mms and target_hol_id</span>
+    <span style="color: #F92672;">if</span> <span style="color: #F92672;">len</span><span style="color: #AE81FF;">(</span>sys.argv<span style="color: #AE81FF;">)</span> == <span style="color: #AE81FF;">3</span>:
+        <span style="color: #FD971F;">bib_mms</span> = sys.argv<span style="color: #AE81FF;">[</span><span style="color: #AE81FF;">1</span><span style="color: #AE81FF;">]</span>
+        <span style="color: #FD971F;">target_hol_id</span> = sys.argv<span style="color: #AE81FF;">[</span><span style="color: #AE81FF;">2</span><span style="color: #AE81FF;">]</span>
+    <span style="color: #F92672;">else</span>:
+        <span style="color: #FD971F;">bib_mms</span>, <span style="color: #FD971F;">target_hol_id</span> = get_mmsids<span style="color: #AE81FF;">()</span>
+
+    <span style="color: #F92672;">global</span> logger
+    <span style="color: #FD971F;">logger</span> = logging_setup<span style="color: #AE81FF;">(</span>bib_mms, target_hol_id<span style="color: #AE81FF;">)</span>
+
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">log who started the program</span>
+    logger.debug<span style="color: #AE81FF;">(</span>f<span style="color: #E6DB74;">"Programm gestartet von {getpass.getuser()}."</span><span style="color: #AE81FF;">)</span>
+    logger.debug<span style="color: #AE81FF;">(</span>f<span style="color: #E6DB74;">"bib_mms: {bib_mms}, target_hol_id: {target_hol_id}"</span><span style="color: #AE81FF;">)</span>
+
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">do your work</span>
+    logger.info<span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"Hole Daten von Alma ..."</span><span style="color: #AE81FF;">)</span>
+    <span style="color: #FD971F;">item_list</span> = get_items<span style="color: #AE81FF;">(</span>bib_mms, target_hol_id<span style="color: #AE81FF;">)</span>
+    <span style="color: #FD971F;">item_count</span> = <span style="color: #F92672;">len</span><span style="color: #AE81FF;">(</span>item_list<span style="color: #AE81FF;">)</span>
+    logger.info<span style="color: #AE81FF;">(</span>f<span style="color: #E6DB74;">"Zu bearbeitende Exemplare: {item_count}"</span><span style="color: #AE81FF;">)</span>
+
+    <span style="color: #F92672;">for</span> idx, item <span style="color: #F92672;">in</span> <span style="color: #F92672;">enumerate</span><span style="color: #AE81FF;">(</span>item_list<span style="color: #AE81FF;">)</span>:
+        logger.info<span style="color: #AE81FF;">(</span>f<span style="color: #E6DB74;">"Exemplar {idx + 1} von {item_count}: {item['item_data']['barcode']}"</span><span style="color: #AE81FF;">)</span>
+        logger.info<span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"Bearbeite Exemplardaten ..."</span><span style="color: #AE81FF;">)</span>
+        change_item_information<span style="color: #AE81FF;">(</span>item<span style="color: #AE81FF;">)</span>
+
+        logger.info<span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"Verschieben an Zielholding ..."</span><span style="color: #AE81FF;">)</span>
+        move_item<span style="color: #AE81FF;">(</span>item, bib_mms, target_hol_id<span style="color: #AE81FF;">)</span>
+
+    <span style="color: #F92672;">input</span><span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"Verarbeitung abgeschlossen!\nDr&#252;cken Sie ENTER um das Programm zu verlassen."</span><span style="color: #AE81FF;">)</span>
+
+main<span style="color: #AE81FF;">()</span>
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org2461015" class="outline-3">
+<h3 id="org2461015"><span class="section-number-3">2.4</span> Tests</h3>
+<div class="outline-text-3" id="text-2-4">
+<p>
+Natürlich will das alles gut getestet sein.
+</p>
+
+<p>
+Beispieldatensätze in der Sandbox:
+</p>
+<ul class="org-ul">
+<li>990011505800203339: 10 Hols, keine alternative Signatur</li>
+<li>990011608060203339: 10 Hols, alternative Signatur</li>
+<li>990006489880203339: 106 Hols, alternative Signatur</li>
+</ul>
+
+<p>
+Zuerst holen wir mal alle Exemplare und speichern sie, sodass wir mir
+schnell den Ausgangszustand wiederherstellen können.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #F92672;">import</span> pytest
+<span style="color: #F92672;">from</span> multi_hol.multi_hol <span style="color: #F92672;">import</span> *
+<span style="color: #75715E;"># </span><span style="color: #75715E;">with alternative call number</span>
+<span style="color: #F92672;">with</span> <span style="color: #F92672;">open</span><span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"tests/testdata/10items_alt.json"</span><span style="color: #AE81FF;">)</span> <span style="color: #F92672;">as</span> fh:
+    <span style="color: #FD971F;">items_alt</span> = json.load<span style="color: #AE81FF;">(</span>fh<span style="color: #AE81FF;">)[</span><span style="color: #E6DB74;">"item"</span><span style="color: #AE81FF;">]</span>
+<span style="color: #75715E;"># </span><span style="color: #75715E;">without alternative call number</span>
+<span style="color: #F92672;">with</span> <span style="color: #F92672;">open</span><span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"tests/testdata/10items_no_alt.json"</span><span style="color: #AE81FF;">)</span> <span style="color: #F92672;">as</span> fh:
+    <span style="color: #FD971F;">items_no_alt</span> = json.load<span style="color: #AE81FF;">(</span>fh<span style="color: #AE81FF;">)[</span><span style="color: #E6DB74;">"item"</span><span style="color: #AE81FF;">]</span>
+
+<span style="color: #FD971F;">item_alt</span> = items_alt.pop<span style="color: #AE81FF;">(</span><span style="color: #AE81FF;">0</span><span style="color: #AE81FF;">)</span>
+<span style="color: #FD971F;">item_no_alt</span> = items_no_alt.pop<span style="color: #AE81FF;">(</span><span style="color: #AE81FF;">0</span><span style="color: #AE81FF;">)</span>
+
+<span style="color: #F92672;">def</span> <span style="color: #A6E22E;">test_get_item</span><span style="color: #AE81FF;">()</span>:
+    <span style="color: #FD971F;">items</span> = get_items<span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"990006489880203339"</span><span style="color: #AE81FF;">)</span>
+    <span style="color: #F92672;">assert</span> <span style="color: #F92672;">len</span><span style="color: #AE81FF;">(</span>items<span style="color: #AE81FF;">)</span> == <span style="color: #AE81FF;">106</span>
+    <span style="color: #FD971F;">barcodes</span> = <span style="color: #AE81FF;">[]</span>
+    <span style="color: #F92672;">for</span> item <span style="color: #F92672;">in</span> items:
+        barcodes.append<span style="color: #AE81FF;">(</span>item<span style="color: #66D9EF;">[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #66D9EF;">][</span><span style="color: #E6DB74;">"barcode"</span><span style="color: #66D9EF;">]</span><span style="color: #AE81FF;">)</span>
+    <span style="color: #F92672;">assert</span> <span style="color: #F92672;">len</span><span style="color: #AE81FF;">(</span>items<span style="color: #AE81FF;">)</span> == <span style="color: #F92672;">len</span><span style="color: #AE81FF;">(</span>barcodes<span style="color: #AE81FF;">)</span>
+    <span style="color: #F92672;">assert</span> <span style="color: #F92672;">len</span><span style="color: #AE81FF;">(</span><span style="color: #F92672;">set</span><span style="color: #66D9EF;">(</span>barcodes<span style="color: #66D9EF;">)</span><span style="color: #AE81FF;">)</span> == <span style="color: #F92672;">len</span><span style="color: #AE81FF;">(</span>barcodes<span style="color: #AE81FF;">)</span>
+
+<span style="color: #F92672;">def</span> <span style="color: #A6E22E;">test_get_bch</span><span style="color: #AE81FF;">()</span>:
+    <span style="color: #F92672;">assert</span> get_bch<span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"22312549980003339"</span><span style="color: #AE81FF;">)</span> == <span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"BDEPO"</span>, <span style="color: #E6DB74;">"DHB40"</span>, <span style="color: #E6DB74;">"II 140137, 219,Ind. 1879"</span><span style="color: #AE81FF;">)</span>
+
+<span style="color: #F92672;">def</span> <span style="color: #A6E22E;">test_change_item_info</span><span style="color: #AE81FF;">()</span>:
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">load items</span>
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">with alternative call number</span>
+    <span style="color: #F92672;">with</span> <span style="color: #F92672;">open</span><span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"tests/testdata/10items_alt.json"</span><span style="color: #AE81FF;">)</span> <span style="color: #F92672;">as</span> fh:
+        <span style="color: #FD971F;">items_alt</span> = json.load<span style="color: #AE81FF;">(</span>fh<span style="color: #AE81FF;">)[</span><span style="color: #E6DB74;">"item"</span><span style="color: #AE81FF;">]</span>
+    <span style="color: #75715E;"># </span><span style="color: #75715E;">without alternative call number</span>
+    <span style="color: #F92672;">with</span> <span style="color: #F92672;">open</span><span style="color: #AE81FF;">(</span><span style="color: #E6DB74;">"tests/testdata/10items_no_alt.json"</span><span style="color: #AE81FF;">)</span> <span style="color: #F92672;">as</span> fh:
+        <span style="color: #FD971F;">items_no_alt</span> = json.load<span style="color: #AE81FF;">(</span>fh<span style="color: #AE81FF;">)[</span><span style="color: #E6DB74;">"item"</span><span style="color: #AE81FF;">]</span>
+
+    <span style="color: #FD971F;">item_alt</span> = items_alt.pop<span style="color: #AE81FF;">(</span><span style="color: #AE81FF;">0</span><span style="color: #AE81FF;">)</span>
+    <span style="color: #FD971F;">item_no_alt</span> = items_no_alt.pop<span style="color: #AE81FF;">(</span><span style="color: #AE81FF;">0</span><span style="color: #AE81FF;">)</span>
+
+    <span style="color: #F92672;">assert</span> change_item_information<span style="color: #AE81FF;">(</span>item_alt<span style="color: #AE81FF;">)[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"alternative_call_number"</span><span style="color: #AE81FF;">]</span> == <span style="color: #E6DB74;">"HB20-918 ; I 380584/1971,2"</span>
+    <span style="color: #F92672;">assert</span> change_item_information<span style="color: #AE81FF;">(</span>item_no_alt<span style="color: #AE81FF;">)[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"alternative_call_number"</span><span style="color: #AE81FF;">]</span> == <span style="color: #E6DB74;">"I 380010/48"</span>
+    <span style="color: #F92672;">assert</span> change_item_information<span style="color: #AE81FF;">(</span>item_no_alt<span style="color: #AE81FF;">)[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"alternative_call_number_type"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"value"</span><span style="color: #AE81FF;">]</span> == <span style="color: #AE81FF;">8</span>
+    <span style="color: #F92672;">assert</span> change_item_information<span style="color: #AE81FF;">(</span>item_no_alt<span style="color: #AE81FF;">)[</span><span style="color: #E6DB74;">"item_data"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"alternative_call_number_type"</span><span style="color: #AE81FF;">][</span><span style="color: #E6DB74;">"desc"</span><span style="color: #AE81FF;">]</span> == <span style="color: #E6DB74;">"Other scheme"</span>
+
+
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgc6010db" class="outline-2">
+<h2 id="orgc6010db"><span class="section-number-2">3</span> API-Dokumentation</h2>
+<div class="outline-text-2" id="text-3">
+<ul class="org-ul">
+<li><a href="https://developers.exlibrisgroup.com/alma/apis/bibs/DELETE/gwPcGly021om4RTvtjbPleCklCGxeYAfEqJOcQOaLEvNcHQT0/ozqu3DGTurs/Xx+GZLELMQamEGJL0f6Mjkdw==/af2fb69d-64f4-42bc-bb05-d8a0ae56936e">Withdraw Item</a></li>
+<li><a href="https://developers.exlibrisgroup.com/alma/apis/bibs/POST/gwPcGly021om4RTvtjbPleCklCGxeYAfEqJOcQOaLEvNcHQT0/ozqu3DGTurs/XxIP4LrexQUdc=/af2fb69d-64f4-42bc-bb05-d8a0ae56936e">Create Item</a></li>
+<li><a href="https://developers.exlibrisgroup.com/alma/apis/xsd/rest_item.xsd">Item-Object</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org3b819e0" class="outline-2">
+<h2 id="org3b819e0"><span class="section-number-2">4</span> Dokumentation für BearbeiterInnen</h2>
+<div class="outline-text-2" id="text-4">
+</div>
+<div id="outline-container-orgbf16fb6" class="outline-3">
+<h3 id="orgbf16fb6"><span class="section-number-3">4.1</span> Allgemeines</h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+In Alma gibt es Datensätze (größenteils Zeitschriften und Reihen), an denen
+für jedes Exemplar ein Holding vorhanden ist, obwohl eigentlich die ganzen
+Exemplare an einem oder wenigen Holdings hängen sollten. Meistens ist das
+der Fall, weil in Aleph kein Holding an diesem Titel vorhanden war. Nachdem
+jedes Exemplar eine andere Signatur hatte (<code>I 12345/1</code>, <code>I 12345/2</code>, usw.),
+wurde bei der Migration für jedes einzelne ein eigenes Holding gebildet. Das
+wollen wir nun bereinigen.
+</p>
+
+<p>
+Nachdem das bei mehr als 40.000 Exemplaren intellektuell nicht zu leisten
+ist, gibt es zu diesem Zweck ein kleines Programm, das Sie dabei
+unterstützt.
+</p>
+
+<p>
+Der Ablauf für Sie schaut folgendermaßen aus:
+</p>
+
+<ul class="org-ul">
+<li>Zielholding identifizieren/erstellen</li>
+<li>Programm aufrufen</li>
+<li>Falls mehrere Grundsignaturen vorhanden (z. B. &bdquo;N.F.&ldquo;), mit nächster
+Grundsignatur wiederholen, bis alles Exemplare richtig hängen</li>
+<li>Falls noch nicht geschehen, die Informationen in den Holdings ergänzen,
+die noch fehlen</li>
+</ul>
+</div>
+
+<div id="outline-container-orgb8f5caa" class="outline-4">
+<h4 id="orgb8f5caa"><span class="section-number-4">4.1.1</span> Zuordnung von Exemplaren an das Zielholding</h4>
+<div class="outline-text-4" id="text-4-1-1">
+<p>
+Im Zuge der Verarbeitung werden alle Holdings auf Übereinstimmungen mit dem
+Zielholding geprüft. Wenn die richtigen Werte übereinstimmen, werden die
+Exemplare von diesen Holdings ans Zielholding gehängt und das dann
+überflüssige Holding gelöscht.
+</p>
+
+<p>
+Die Überprüfung, ob ein Exemplar sich zum Umhängen qualifiziert, läuft
+über das Feld <code>852</code> im Holding:
+</p>
+
+<ul class="org-ul">
+<li><code>$$b</code> muss übereinstimmen</li>
+<li><code>$$c</code> muss übereinstimmen</li>
+<li><code>$$h</code> genauso <i>beginnen</i> wie <code>$$h</code> im Zielholding</li>
+</ul>
+</div>
+
+
+<ol class="org-ol">
+<li><a id="org3442ee3"></a>Ein paar Beispiele<br />
+<div class="outline-text-5" id="text-4-1-1-1">
+<p>
+Zielholding: <code>852 81 $$b BDEPO $$c DHB $$h II 47550</code>
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Informationen im Ausgangshol</th>
+<th scope="col" class="org-left">Match</th>
+<th scope="col" class="org-left">Kommentar</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left"><code>$$b BHB $$c MAG $$h II 47550/1</code></td>
+<td class="org-left">Nein</td>
+<td class="org-left"><code>$$b</code> und <code>$$c</code> stimmen nicht überein</td>
+</tr>
+
+<tr>
+<td class="org-left"><code>$$b BDEPO $$c DHB $$h II 47550/N.F.2</code></td>
+<td class="org-left">Ja</td>
+<td class="org-left"><code>$$b</code> und <code>$$c</code> stimmen überein</td>
+</tr>
+
+<tr>
+<td class="org-left">&#xa0;</td>
+<td class="org-left">&#xa0;</td>
+<td class="org-left"><code>$$h</code> beginnt wie <code>$$h</code> im Zielholding</td>
+</tr>
+
+<tr>
+<td class="org-left"><code>$$b BDEPO $$c DHB $$h II 47550/3</code></td>
+<td class="org-left">Ja</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="org-left"><code>$$b BDEPO $$c DHBMA $$h 47550/1</code></td>
+<td class="org-left">Nein</td>
+<td class="org-left"><code>$$c</code> stimmt nicht überein</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+Wir sehen, dass sowohl <code>II 47550/3</code> als auch <code>II 47550/N.F.2</code> der
+Grundsignatur zugeordnet werden, obwohl hier eigentlich zwei Holdings
+angelegt werden müssten. Das ist technisch nicht anders möglich. Daher
+ist die Reihenfolge, in der diese Exemplare bearbeitet werden
+entscheidend. Mehr dazu im Abschnitt <a href="#org045a645">4.3.1</a>.
+</p>
+</div>
+</li>
+
+
+
+<li><a id="org2662b6a"></a>Die Grundsignatur<br />
+<div class="outline-text-5" id="text-4-1-1-2">
+<p>
+Um ein Zielholding zu identifizieren bzw. zu erstellen, müssen wir klären,
+was wir in diesem Zusammenhang unter dem Begriff <i>Grundsignatur</i> verstehen:
+</p>
+
+<p>
+Unter <b>Grundsignatur</b> verstehen wir den Teil einer Signatur, der <i>mehreren
+Exemplaren einer Zählfolge gemeinsam</i> ist. Z. B. <code>I 156715</code>, aber auch <code>I
+        156715/N.F.</code> oder <code>I 156715/3.Ser.</code>. Diese Unterscheidung ist wichtig, weil
+die Zuordnung der Exemplare an ein Zielholding unter anderem dadurch
+passiert, dass die Signatur im zu bereinigenden Holding gleich anfängt, wie
+die im Zielholding.
+</p>
+</div>
+</li>
+</ol>
+</div>
+</div>
+<div id="outline-container-org201f328" class="outline-3">
+<h3 id="org201f328"><span class="section-number-3">4.2</span> Arbeitsablauf</h3>
+<div class="outline-text-3" id="text-4-2">
+</div>
+<div id="outline-container-org71c5caf" class="outline-4">
+<h4 id="org71c5caf"><span class="section-number-4">4.2.1</span> MMS-ID des bibliografischen Datensatzes ermitteln</h4>
+<div class="outline-text-4" id="text-4-2-1">
+<p>
+Damit das Programm arbeiten kann brauchen wir die <i>lokale</i> MMS-ID des
+Titeldatensatzes und die MMS-ID des Zielholdings. Am einfachsten ist es,
+wenn man sich diese Nummern irgendwo zwischenspeichert (im Editor z. B.), um
+sie dann in die Eingabefelder zu kopieren.
+</p>
+
+<p>
+Wie kommt man zur lokalen MMS-ID? Die lokale MMS-ID ist die, die mit 3339
+endet (im Gegensatz zu 3331 in der NZ). Am einfachsten kommt man zu dieser
+in der Datensatz-Ansicht (d. h. wenn man beim Suchergebnis auf den Titel
+klickt):
+</p>
+
+
+<div class="figure">
+<p><img src="file:///home/schuhs/projects/multi-hol/doc/pic/mmsid_bib.png" alt="mmsid_bib.png" />
+</p>
+</div>
+
+<p>
+Diese Nummer muss mit <code>99</code> anfangen und mit <code>3339</code> aufhören. Öffnen Sie
+den Texteditor &#x2013; einfach Windows-Taste drücken und &bdquo;Editor&ldquo; eingeben: 
+</p>
+
+
+<div class="figure">
+<p><img src="file:///home/schuhs/projects/multi-hol/doc/pic/start_edit.png" alt="start_edit.png" />
+</p>
+</div>
+
+<p>
+Kopieren Sie die Nummer hinein.
+</p>
+</div>
+</div>
+<div id="outline-container-orgd5ac8a2" class="outline-4">
+<h4 id="orgd5ac8a2"><span class="section-number-4">4.2.2</span> Das Ziel-Holding identifizieren/anlegen</h4>
+<div class="outline-text-4" id="text-4-2-2">
+<p>
+In den allermeisten Fällen müssen Sie das Zielholding neu anlegen. Das
+geht aber recht schnell:
+</p>
+
+<ol class="org-ol">
+<li>Suchen Sie ein beliebiges Holding am gleichen Standort, mit der
+Grundsignatur, die Sie brauchen und öffnen Sie dieses im Metadateneditor
+zum bearbeiten</li>
+<li>Klicken Sie auf [Datei -&gt; Duplizieren]</li>
+<li><p>
+Im duplizierten Holding (erkennbar am ausgegrauten Symbol) löschen Sie
+den hinteren Teil der Signatur, sodass nur die Grundsignatur übrig bleibt:
+</p>
+
+
+<div class="figure">
+<p><img src="file:///home/schuhs/projects/multi-hol/doc/pic/dupliziertes_hol.png" alt="dupliziertes_hol.png" />
+</p>
+</div></li>
+<li>Klicken sie auf <code>Speichern</code></li>
+<li><p>
+Kopieren Sie die MMS-ID des Holdings (siehe den grünen Pfeil im Bild bei
+Punkt 3) auch in den Editor. Die MMS-ID eines Holdings beginnt immer
+mit <code>22</code> und endet mit <code>3339</code>. Im Bild sehen Sie das Editorfenster mit
+der MMS-ID des Bibsatzes in der ersten und der des Holdings in der
+zweiten Zeile.
+</p>
+
+
+<div class="figure">
+<p><img src="file:///home/schuhs/projects/multi-hol/doc/pic/mmsid_editor.png" alt="mmsid_editor.png" />
+</p>
+</div></li>
+</ol>
+</div>
+</div>
+<div id="outline-container-org938c602" class="outline-4">
+<h4 id="org938c602"><span class="section-number-4">4.2.3</span> Das Programm ausführen</h4>
+<div class="outline-text-4" id="text-4-2-3">
+<p>
+Jetzt, wo Sie das Zielholding angelegt haben und die MMS-IDs vom
+bibliografischen Datensatz und vom Holding in den Editor kopiert haben,
+können Sie das Programm ausführen. Wo es genau liegt, haben Sie
+normalerweise bei der Einschulung erfahren, wahrscheinlich haben Sie auch
+eine Verknüpfung auf Ihrem Desktop. Machen Sie einen Doppelklick auf das
+Programm und nach ein paar Sekunden kommt ein Eingabefenster:
+</p>
+
+
+<div class="figure">
+<p><img src="file:///home/schuhs/projects/multi-hol/doc/pic/eingabefenster.png" alt="eingabefenster.png" />
+</p>
+</div>
+
+<p>
+Fügen Sie die jeweiligen Nummern in die entsprechenden Felder ein und
+klicken Sie auf &bdquo;OK&ldquo;.
+</p>
+
+<p>
+Im schwarzen Fenster das sich auch mit dem Programm geöffnet hat, sehen
+Sie den Fortschritt der des Programms. Wenn es fertig ist, sehen Sie die
+Zeilen
+</p>
+
+
+<div class="figure">
+<p><img src="file:///home/schuhs/projects/multi-hol/doc/pic/verarbeitung_abgeschlossen.png" alt="verarbeitung_abgeschlossen.png" />
+</p>
+</div>
+
+<p>
+Wenn Sie <code>ENTER</code> drücken, schließt sich das Fenster und das Progamm ist beendet.
+</p>
+</div>
+</div>
+<div id="outline-container-orgb2df227" class="outline-4">
+<h4 id="orgb2df227"><span class="section-number-4">4.2.4</span> Die Zusammenfassende Bestandsangabe, etc. in Zielholding eintragen</h4>
+<div class="outline-text-4" id="text-4-2-4">
+<p>
+Nach Ausführung des Programms sollte es am Datensatz für Ihre Signatur nur
+noch ein Holding geben, an dem alle Exemplare hängen. Überprüfen Sie, was
+da ist und machen Sie eine entsprechende zusammenfassende Bestandsangabe
+im Holding.
+</p>
+
+<p>
+Es ist empfehlenswert, diesen Schritt am Schluss zu machen, weil es sein
+kann, dass die Bearbeitung mit weiteren Grundsignaturen (&bdquo;N.F.&ldquo;, etc.;
+siehe <a href="#org045a645">4.3.1</a>)
+wiederholt werden muss. Erst wenn alle Exemplare richtig hängen, lassen
+sich die Angaben in den Holdings korrekt machen.
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-orgaa04388" class="outline-3">
+<h3 id="orgaa04388"><span class="section-number-3">4.3</span> Spezialfälle</h3>
+<div class="outline-text-3" id="text-4-3">
+</div>
+<div id="outline-container-org045a645" class="outline-4">
+<h4 id="org045a645"><span class="section-number-4">4.3.1</span> Mehrere Grundsignaturen an einem bibliografischen Datensatz</h4>
+<div class="outline-text-4" id="text-4-3-1">
+<p>
+Manchmal ist es notwendig, die Exemplare an einem bibliografischen
+Datensatz auf mehrere Holdings aufzuteilen. Das kommt dann vor, wenn es
+mehrere Zählfolgen gibt. Jede dieser Zählfolgen hat eine eigene <a href="#org2662b6a">Grundsignatur</a>, 
+für die jeweils ein eigenes Holding angelegt werden muss.
+</p>
+
+<p>
+Wenn wir uns das Beispiel von <a href="#org3442ee3">4.1.1.1</a> noch einmal ansehen,
+bemerken wir, dass die Signaturen <code>II 47550/3</code> und <code>II 47550/N.F.2</code> beide
+dem gleichen Zielholding zugeordnet werden. Nachdem der Anfang der
+Signatur übereinstimmt, lässt sich das nicht verhindern. Im Endeffekt
+funktioniert das Ganze aber trotzdem, wenn wir die Signaturen in der richtigen
+Reihenfolge, nämlich beginnend mit der kürzesten Signatur, abarbeiten.
+</p>
+
+<p>
+Würden wir diese Reihenfolge nicht einhalten, d. h. z. B. zuerst <code>II
+      47550/N.F.</code> und erst dann <code>II 47550</code> bearbeiten, würden beim zweiten Lauf
+die Exemplare alle von <code>II 47550/N.F.</code> wegwandern und sich an <code>II 47550</code>
+hängen (weil ihre Signatur ja auch mit <code>II 47550</code> beginnt). Umgekehrt
+passiert das nicht, weil z. B. <code>II 47550/23</code> ja nicht mit <code>II 47550/N.F.</code>
+anfängt.
+</p>
+
+<p>
+Das kling komplizierter, als es in der Praxis ist:
+</p>
+
+<ol class="org-ol">
+<li>Zuerst das Zielholding für die <i>kürzeste</i> Signatur anlegen und das
+Programm ausführen. Damit hängen sich <i>alle</i> Exemplare an dieses
+Holding.</li>
+<li>Danach das Zielholding für die nächste Signatur (z. B. <code>II 47550/N.F.</code>)
+anlegen und das Programm ausführen. Damit wandern die Exemplare der
+Neuen Folge vom ersten Zielholding an das richtige. An diesem Punkt ist
+die Reihenfolge nicht mehr wichtig, d. h. es ist egal ob man jetzt mit
+der neuen Folge oder der 3. Serie weitermacht.</li>
+<li>Diesen Vorgang mit allen notwendigen Grundsignaturen wiederholen, bis alle
+Exemplare beim richtigen Holding sind.</li>
+</ol>
+</div>
+<ol class="org-ol">
+<li><a id="org3ce3e90"></a>Ein Beispiel für mehrere Signaturen<br />
+<div class="outline-text-5" id="text-4-3-1-1">
+<p>
+Hier ein Screenshot der Holdings-Liste vor der Bearbeitung, an jedem HOL
+gibt es genau ein Exemplar:
+</p>
+
+
+<div class="figure">
+<p><img src="file:///home/schuhs/projects/multi-hol/doc/pic/holdings_vorher.png" alt="holdings_vorher.png" />
+</p>
+</div>
+
+<p>
+Nachdem wir ein Holding für <code>II 209630</code> angelegt und unser Programm haben
+laufen lassen, gibt es nur noch ein Holding (dafür mit 5 Exemplaren):
+</p>
+
+
+<div class="figure">
+<p><img src="file:///home/schuhs/projects/multi-hol/doc/pic/holding_nachher.png" alt="holding_nachher.png" />
+</p>
+</div>
+
+<p>
+Wenn wir die Exemplare dieses Holdings anzeigen lassen, sehen wir in der
+alternativen Signatur die einzelnen Signaturen für die Exmplare. Auch die
+neue Folge und die 3. Serie sind hier vertreten:
+</p>
+
+
+<div class="figure">
+<p><img src="file:///home/schuhs/projects/multi-hol/doc/pic/exemplare_nachher1.png" alt="exemplare_nachher1.png" />
+</p>
+</div>
+
+<p>
+Also legen wir ein weiteres Holding mit der Signatur <code>II 209630/N.F.</code> an
+und führen das Programm noch einmal aus. Wieder die gleiche MMS-ID für den
+Bibsatz, aber die MMS-ID für das gerade angelegte neue Holding. Danach
+gibt es zwei Holdings:
+</p>
+
+
+<div class="figure">
+<p><img src="file:///home/schuhs/projects/multi-hol/doc/pic/holdings_nachher2.png" alt="holdings_nachher2.png" />
+</p>
+</div>
+
+<p>
+Wir sehen, dass bei <code>II 209630</code> nur noch drei Exemplare sind, die anderen
+beiden sind zu <code>II 209630/N.F.</code> gewandert. Nun fehlt uns noch das eine
+Exemplar für die 3. Serie. Also legen wir noch ein Holding mit <code>II
+        209630/3.Ser.</code> an und lassen das Programm noch einmal laufen. Dann gibt es
+drei Holdings:
+</p>
+
+
+<div class="figure">
+<p><img src="file:///home/schuhs/projects/multi-hol/doc/pic/holdings_nachher3.png" alt="holdings_nachher3.png" />
+</p>
+</div>
+
+<p>
+Wenn wir alle Exemplare anzeigen und dort die Signatur und die alternative
+Signatur ansehen, sehen wir, dass jetzt alles richtig hängt:
+</p>
+
+
+<div class="figure">
+<p><img src="file:///home/schuhs/projects/multi-hol/doc/pic/exemplare_nachher2.png" alt="exemplare_nachher2.png" />
+</p>
+</div>
+
+<p>
+Nun können wir die restlichen Daten in den Holdings nachtragen:
+</p>
+
+<p>
+Bei <code>II 209630</code>:
+</p>
+
+
+<div class="figure">
+<p><img src="file:///home/schuhs/projects/multi-hol/doc/pic/bestand1.png" alt="bestand1.png" />
+</p>
+</div>
+
+<p>
+Bei <code>II 209630/N.F.</code>:
+</p>
+
+
+<div class="figure">
+<p><img src="file:///home/schuhs/projects/multi-hol/doc/pic/bestand2.png" alt="bestand2.png" />
+</p>
+</div>
+
+<p>
+Bei <code>II 209630/3.Ser.</code>:
+</p>
+
+
+<div class="figure">
+<p><img src="file:///home/schuhs/projects/multi-hol/doc/pic/bestand3.png" alt="bestand3.png" />
+</p>
+</div>
+</div>
+</li>
+</ol>
+</div>
+<div id="outline-container-orgfe20fb9" class="outline-4">
+<h4 id="orgfe20fb9"><span class="section-number-4">4.3.2</span> Fehlermeldungen</h4>
+<div class="outline-text-4" id="text-4-3-2">
+<p>
+Wenn alles reibungslos funktioniert sehen sie in dem Terminalfenster, das
+sich mit dem Programm öffnet, diverse Informationen vorbeiziehen. Was
+diese genau bedeuten, muss Sie nicht weiter interessieren. Sie sehen das
+nur, damit Sie wissen, dass das Programm etwas tut &#x2013; es kann nämlich
+recht lange dauern, wenn viele Exemplare umgehängt werden. Führen Sie das
+Programm also lieber nicht aus, kurz bevor Sie nachhause gehen wollen. ;-)
+</p>
+
+<p>
+Normalerweise beginnt jede einzelne Zeile mit <code>INFO:</code>. Wenn das der Fall
+ist, ist alles ok. Es kann aber auch sein, dass einmal eine Zeile mit
+<code>ERROR:</code> beginnt. Dann hat etwas nicht funktioniert. Üblicherweise
+passiert das, wenn ein Exmplar entlehnt ist, oder eine Bestellung mit dem
+Exemplar oder dem Holding verbunden ist.
+</p>
+
+<p>
+Das ist in den meisten Fällen kein Grund zur Besorgnis: Das Programm läuft
+weiter und lässt das betroffene Holding samt Item in Ruhe. Allerdings
+müssen Sie dieses dann manuell bereinigen. Das heißt, wenn eine Bestellung
+damit verbunden ist, diese entsprechend bearbeiten, nämlich mit dem
+Zielholding verbinden. Wenn das Exemplar entlehnt ist, müssen Sie eh
+warten, bis es zurück ist und können es dann umhängen.
+</p>
+
+<p>
+Hier zwei Beispiele für typische Fehlermeldungen:
+</p>
+
+<p>
+<b>Bestellung vorhanden:</b>
+</p>
+
+<pre class="example" id="Bestellung vorhanden">
+ERROR: move_item(): löschen fehlgeschlagen bei @B1103200. {"errorsExist":true,
+"errorList":{"error":[{"errorCode":"401849","errorMessage":"Item delete errors:
+There is a PO line POL-13073 linked to this item @B1103200. Please handle the 
+order (using the PO line pages) before withdrawing this item / these items. \n",
+"trackingId":"E01-2101110719-OYNS8-AWAE1622782160"}]},"result":null}
+</pre>
+
+<p>
+<b>Exemplar entlehnt:</b>
+</p>
+
+<pre class="example">
+ERROR: move_item(): löschen fehlgeschlagen bei @B1303276. {"errorsExist":true,
+"errorList":{"error":[{"errorCode":"401849","errorMessage":"Item delete errors:
+There are loans registered for item @B1303276. Please handle the loans before deleting
+this item / these items. \n","trackingId":"E01-2201074327-ZSZQY-AWAE1622782160"}]},
+"result":null}
+</pre>
+
+<p>
+Bei solchen Fehlermeldungen wissen Sie damit, was zu tun ist. 
+</p>
+
+<p>
+Sollten allerdings andere Fehlermeldungen ausgegeben werden, ist das auch
+kein Grund zur Panik. Das was Sie am Bildschirm vorbeiziehen sehen (und
+noch einiges mehr) wird automatisch in eine Log-Datei geschrieben. Wenden
+Sie sich in so einem Fall bitte an die Person, die dieses Programm betreut
+(an der UBG <a href="mailto:stefan.schuh@uni-graz.at">stefan.schuh@uni-graz.at</a>). Diese kann dann in der
+Log-Datei nachsehen, was passiert ist und wie sich der Fehler beheben
+lässt. Es werden keine Daten verloren gehen &#x2013; das Programm schreibt immer
+eine Sicherungskopie <i>bevor</i> es irgendetwas im System ändert.
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="date">Datum: 2018-07-23 17:52</p>
+<p class="author">Autor: Stefan Schuh</p>
+<p class="email">Email: <a href="mailto:stefan.schuh@uni-graz.at">stefan.schuh@uni-graz.at</a></p>
+<p class="date">Created: 2019-01-23 Mi 09:57</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>

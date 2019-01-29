@@ -5,9 +5,8 @@
 #+DATE: 2018-07-23 17:52
 #+DESCRIPTION:
 #+KEYWORDS:
-#+RST: .. status: draft
 #+LANGUAGE: de
-#+OPTIONS: tex:t todo:t pri:nil tags:t texht:nil ':t
+#+OPTIONS: tex:t todo:nil pri:nil tags:t texht:nil ':t
 #+OPTIONS: author:t creator:nil email:t date:t
 #+LATEX_CLASS: koma-article
 #+LATEX_CLASS_OPTIONS: [10pt, a4paper]
@@ -47,26 +46,27 @@
     3. Nach Ausführung kontrollieren, ob Fehler aufgetreten sind und diese
        manuell bereinigen.
    
-*** Was soll das Script leisten?
-    Im Endeffekt sollen alle Items an ihren richtigen Holdings hängen. Dazu
-    sollte aus dem Zielholding die Grundsignatur ausgelesen werden. Nur
-    Exemplare, bei denen Bibliothek, Standort und Grundsignatur mit dem Holding
-    übereinstimmen, sollten an das jeweilige Holding gehängt werden.
+*** Technischer Ablauf
+    Im Endeffekt sollen alle Items an ihren richtigen Holdings hängen. Dazu wird
+    aus dem Zielholding die Grundsignatur ausgelesen. Nur Exemplare, bei denen
+    Bibliothek, Standort und Grundsignatur mit dem Holding übereinstimmen,
+    sollten an das jeweilige Holding gehängt werden.
 
     Dabei wird folgendermaßen vorgegangen:
 
     1. Die Benutzerin/der Benutzer übergibt dem Programm die (lokale) MMS-ID des
-       bibliografischen Datensätzes und die MMS-ID des Zielholdings.
-    2. Es werden alle Exemplare an einem Titeldatensatz via API von Alma geholt.
+       bibliografischen Datensätzes und die MMS-ID des Zielholdings ([[Feststellen, welche Datensätze bearbeitet werden sollen und ein paar Daten auslesen]]).
+    2. Es werden alle Exemplare an einem Titeldatensatz via API von Alma geholt
+       ([[Items holen]]).
     3. Über einen Abgleich mit dem Zielholding werden die Exemplare
        herausgefiltert, bei denen Bibliothek und Standort übereinstimmen und
-       deren Signatur mit der Signatur des Zielholdings /beginnt/.
+       deren Signatur mit der Signatur des Zielholdings /beginnt/. ([[Items holen]])
     4. Alle sich qualifizierenden Items werden vor der weiteren Bearbeitung
-       lokal gesichert.
+       lokal gesichert. ([[Sicherungen machen]])
     5. Nun werden an jedem einzelnen Item folgende Änderungen vorgenommen
-       ([[change-item-information]]):
+       ([[Änderungen an den Items machen]]):
        - Die Signatur aus dem Holding wird ausgelesen und im Zuge der
-         Verarbeitung insofern vereinheitlicht, dass =I 12345, 1= in =I 12345/1=
+         Verarbeitung insofern vereinheitlicht, dass ~I 12345, 1~ in ~I 12345/1~
          umgewandelt wird.
        - Wenn keine alternative Signatur vorhanden ist, wird die Signatur aus
          dem Holding in die Alternative Signatur geschrieben. Das ist notwendig,
@@ -74,8 +74,8 @@
        - Wenn eine alternative Signatur vorhanden ist, wird die Signatur aus dem
          Holding nach "\nbsp;\nbsp" (Leerzeichen, Semikolon, Leerzeichen) an die
          alternative Signatur angefügt.
-       - Der Exemplarstatus wird auf =null= gesetzt.
-    6. Danach werden die Exemplare an das Zielholding verschoben ([[move-item]]):
+       - Die Exemplarrichtlinie wird gelöscht.
+    6. Danach werden die Exemplare an das Zielholding verschoben ([[Items umhängen und Holdings löschen]]):
        - Das Exemplar wird am Quellholding gelöscht. Durch den Parameter
          =holdings: delete= wird das Holding gelöscht. Sollte das nicht
          funktionieren, wird eine Fehlermeldung ausgegeben und ins Logfile
@@ -83,7 +83,7 @@
        - Das Exemplar wird am Zielholding angehängt.
     7. Verarbeitung abgeschlossen.
     
-    Alle Vorgänge werden in einem Logfile dokumentiert. Nachdem ein Programmlauf
+    Alle Vorgänge werden in einem Logfile ([[Logging]]) dokumentiert. Nachdem ein Programmlauf
     sehr lange dauern kann (~45 min für ca. 250 Exemplare in der Sandbox),
     werden auch Informationen auf stdout geschrieben, sodass die Benutzerinnen
     und Benutzer sehen, dass das Programm noch läuft/arbeitet.
@@ -398,12 +398,13 @@
       falschlicherweise Items von anderen Standorten oder mit anderen
       Grundsignaturen umgehängt werden. Subfelder =b= und =c= müssen
       übereinstimmen; die Signatur des Items (genaugenommen von dessen HOL)
-      muss mit demselben String anfangen, der in Subfeld =h= steht.
+      muss mit demselben String anfangen, der in Subfeld =h= steht. Nachdem in
+      den Daten oft Leerzeichen vorhanden sind (z. B. =N. S.= anstatt =N.S.=),
+      werden Leerzeichen bei diesem Vergleich ignoriert.
 
       #+NAME: check-bch
       #+BEGIN_SRC python
         # check if the item fits the target holding's 852 b, c and h
-
         def check_bch(item, hol_bch):
             """Check if the item fits the target holdings library, location and call number.
 
@@ -782,7 +783,7 @@ Stefan
     Das war es auch schon. Sie sollten im Ordner =dist= die Datei
     =multi-hol.exe= finden.
 
-*** Tests
+*** Tests                                                          :noexport:
     Natürlich will das alles gut getestet sein.
 
     Beispieldatensätze in der Sandbox:
@@ -838,7 +839,7 @@ Stefan
 
     #+END_SRC
 
-* API-Dokumentation
+* API-Dokumentation                                                :noexport:
   - [[https://developers.exlibrisgroup.com/alma/apis/bibs/DELETE/gwPcGly021om4RTvtjbPleCklCGxeYAfEqJOcQOaLEvNcHQT0/ozqu3DGTurs/Xx+GZLELMQamEGJL0f6Mjkdw==/af2fb69d-64f4-42bc-bb05-d8a0ae56936e][Withdraw Item]]
   - [[https://developers.exlibrisgroup.com/alma/apis/bibs/POST/gwPcGly021om4RTvtjbPleCklCGxeYAfEqJOcQOaLEvNcHQT0/ozqu3DGTurs/XxIP4LrexQUdc=/af2fb69d-64f4-42bc-bb05-d8a0ae56936e][Create Item]]
   - [[https://developers.exlibrisgroup.com/alma/apis/xsd/rest_item.xsd][Item-Object]]

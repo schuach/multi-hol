@@ -1,4 +1,4 @@
-% Created 2019-01-22 Di 09:07
+% Created 2019-01-23 Mi 11:18
 % Intended LaTeX compiler: pdflatex
 \documentclass[10pt, a4paper]{scrartcl}
 \usepackage[utf8]{inputenc}
@@ -32,7 +32,7 @@
 \tableofcontents
 
 \section{Allgemeines}
-\label{sec:org9284342}
+\label{sec:orgf3f4861}
 In Alma gibt es Datensätze (größenteils Zeitschriften und Reihen), an denen
 für jedes Exemplar ein Holding vorhanden ist, obwohl eigentlich die ganzen
 Exemplare an einem oder wenigen Holdings hängen sollten. Meistens ist das
@@ -57,7 +57,7 @@ die noch fehlen
 \end{itemize}
 
 \subsection{Zuordnung von Exemplaren an das Zielholding}
-\label{sec:org47f1899}
+\label{sec:orgacf8deb}
 Im Zuge der Verarbeitung werden alle Holdings auf Übereinstimmungen mit dem
 Zielholding geprüft. Wenn die richtigen Werte übereinstimmen, werden die
 Exemplare von diesen Holdings ans Zielholding gehängt und das dann
@@ -74,7 +74,7 @@ Die Überprüfung, ob ein Exemplar sich zum Umhängen qualifiziert, läuft
 
 
 \subsubsection{Ein paar Beispiele}
-\label{sec:org69fc0e4}
+\label{sec:org4ec2135}
 Zielholding: \texttt{852 81 \$\$b BDEPO \$\$c DHB \$\$h II 47550}
 
 \begin{center}
@@ -93,12 +93,12 @@ Wir sehen, dass sowohl \texttt{II 47550/3} als auch \texttt{II 47550/N.F.2} der
 Grundsignatur zugeordnet werden, obwohl hier eigentlich zwei Holdings
 angelegt werden müssten. Das ist technisch nicht anders möglich. Daher
 ist die Reihenfolge, in der diese Exemplare bearbeitet werden
-entscheidend. Mehr dazu im Abschnitt \ref{sec:org2eb550b}.
+entscheidend. Mehr dazu im Abschnitt \ref{sec:org963176c}.
 
 
 
 \subsubsection{Die Grundsignatur}
-\label{sec:org9ba1d80}
+\label{sec:org9cf4c48}
 Um ein Zielholding zu identifizieren bzw. zu erstellen, müssen wir klären,
 was wir in diesem Zusammenhang unter dem Begriff \emph{Grundsignatur} verstehen:
 
@@ -109,9 +109,9 @@ die Zuordnung der Exemplare an ein Zielholding unter anderem dadurch
 passiert, dass die Signatur im zu bereinigenden Holding gleich anfängt, wie
 die im Zielholding.
 \section{Arbeitsablauf}
-\label{sec:org81ce472}
+\label{sec:org6b00836}
 \subsection{MMS-ID des bibliografischen Datensatzes ermitteln}
-\label{sec:org9ca9c11}
+\label{sec:org774b09c}
 Damit das Programm arbeiten kann brauchen wir die \emph{lokale} MMS-ID des
 Titeldatensatzes und die MMS-ID des Zielholdings. Am einfachsten ist es,
 wenn man sich diese Nummern irgendwo zwischenspeichert (im Editor z. B.), um
@@ -130,12 +130,12 @@ Diese Nummer muss mit \texttt{99} anfangen und mit \texttt{3339} aufhören. Öff
 den Texteditor -- einfach Windows-Taste drücken und "`Editor"' eingeben: 
 
 \begin{center}
-\includegraphics[width=.9\linewidth]{/home/schuhs/projects/multi-hol/doc/pic/start_edit.png}
+\includegraphics[width=8cm]{/home/schuhs/projects/multi-hol/doc/pic/start_edit.png}
 \end{center}
 
 Kopieren Sie die Nummer hinein.
 \subsection{Das Ziel-Holding identifizieren/anlegen}
-\label{sec:org2c82a7c}
+\label{sec:org9ca5b86}
 In den allermeisten Fällen müssen Sie das Zielholding neu anlegen. Das
 geht aber recht schnell:
 
@@ -158,11 +158,11 @@ der MMS-ID des Bibsatzes in der ersten und der des Holdings in der
 zweiten Zeile.
 
 \begin{center}
-\includegraphics[width=.9\linewidth]{/home/schuhs/projects/multi-hol/doc/pic/mmsid_editor.png}
+\includegraphics[width=6cm]{/home/schuhs/projects/multi-hol/doc/pic/mmsid_editor.png}
 \end{center}
 \end{enumerate}
 \subsection{Das Programm ausführen}
-\label{sec:orge92c025}
+\label{sec:org6d31045}
 Jetzt, wo Sie das Zielholding angelegt haben und die MMS-IDs vom
 bibliografischen Datensatz und vom Holding in den Editor kopiert haben,
 können Sie das Programm ausführen. Wo es genau liegt, haben Sie
@@ -187,7 +187,7 @@ Zeilen
 
 Wenn Sie \texttt{ENTER} drücken, schließt sich das Fenster und das Progamm ist beendet.
 \subsection{Die Zusammenfassende Bestandsangabe, etc. in Zielholding eintragen}
-\label{sec:orgbdbfbe3}
+\label{sec:org1ee5f09}
 Nach Ausführung des Programms sollte es am Datensatz für Ihre Signatur nur
 noch ein Holding geben, an dem alle Exemplare hängen. Überprüfen Sie, was
 da ist und machen Sie eine entsprechende zusammenfassende Bestandsangabe
@@ -195,19 +195,19 @@ im Holding.
 
 Es ist empfehlenswert, diesen Schritt am Schluss zu machen, weil es sein
 kann, dass die Bearbeitung mit weiteren Grundsignaturen ("`N.F."', etc.;
-siehe \ref{sec:org2eb550b})
+siehe \ref{sec:org963176c})
 wiederholt werden muss. Erst wenn alle Exemplare richtig hängen, lassen
 sich die Angaben in den Holdings korrekt machen.
 \section{Spezialfälle}
-\label{sec:orgf4176c4}
+\label{sec:orgb9ae822}
 \subsection{Mehrere Grundsignaturen an einem bibliografischen Datensatz}
-\label{sec:org2eb550b}
+\label{sec:org963176c}
 Manchmal ist es notwendig, die Exemplare an einem bibliografischen
 Datensatz auf mehrere Holdings aufzuteilen. Das kommt dann vor, wenn es
-mehrere Zählfolgen gibt. Jede dieser Zählfolgen hatte eine eigene \hyperref[sec:org9ba1d80]{Grundsignatur}, 
+mehrere Zählfolgen gibt. Jede dieser Zählfolgen hat eine eigene \hyperref[sec:org9cf4c48]{Grundsignatur}, 
 für die jeweils ein eigenes Holding angelegt werden muss.
 
-Wenn wir uns das Beispiel von \ref{sec:org69fc0e4} noch einmal ansehen,
+Wenn wir uns das Beispiel von \ref{sec:org4ec2135} noch einmal ansehen,
 bemerken wir, dass die Signaturen \texttt{II 47550/3} und \texttt{II 47550/N.F.2} beide
 dem gleichen Zielholding zugeordnet werden. Nachdem der Anfang der
 Signatur übereinstimmt, lässt sich das nicht verhindern. Im Endeffekt
@@ -236,7 +236,7 @@ der neuen Folge oder der 3. Serie weitermacht.
 Exemplare beim richtigen Holding sind.
 \end{enumerate}
 \subsubsection{Ein Beispiel für mehrere Signaturen}
-\label{sec:orgbf0db5f}
+\label{sec:org662e522}
 Hier ein Screenshot der Holdings-Liste vor der Bearbeitung, an jedem HOL
 gibt es genau ein Exemplar:
 
@@ -246,6 +246,7 @@ gibt es genau ein Exemplar:
 
 Nachdem wir ein Holding für \texttt{II 209630} angelegt und unser Programm haben
 laufen lassen, gibt es nur noch ein Holding (dafür mit 5 Exemplaren):
+
 \begin{center}
 \includegraphics[width=.9\linewidth]{/home/schuhs/projects/multi-hol/doc/pic/holding_nachher.png}
 \end{center}
@@ -298,7 +299,7 @@ Bei \texttt{II 209630/3.Ser.}:
 
 \includegraphics[width=5cm]{/home/schuhs/projects/multi-hol/doc/pic/bestand3.png}
 \subsection{Fehlermeldungen}
-\label{sec:org7eb7aab}
+\label{sec:org656a593}
 Wenn alles reibungslos funktioniert sehen sie in dem Terminalfenster, das
 sich mit dem Programm öffnet, diverse Informationen vorbeiziehen. Was
 diese genau bedeuten, muss Sie nicht weiter interessieren. Sie sehen das
@@ -324,7 +325,7 @@ Hier zwei Beispiele für typische Fehlermeldungen:
 \textbf{Bestellung vorhanden:}
 
 \phantomsection
-\label{org4a66c0f}
+\label{org518b162}
 \begin{verbatim}
 ERROR: move_item(): löschen fehlgeschlagen bei @B1103200. {"errorsExist":true,
 "errorList":{"error":[{"errorCode":"401849","errorMessage":"Item delete errors:
