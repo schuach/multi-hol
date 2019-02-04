@@ -296,4 +296,5 @@ def main():
 
     input("Verarbeitung abgeschlossen!\nDrücken Sie ENTER um das Programm zu verlassen.")
 
-# main()
+if __name__ == "__main__":
+    main()

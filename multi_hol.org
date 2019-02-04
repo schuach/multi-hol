@@ -737,7 +737,8 @@ Stefan
 
             input("Verarbeitung abgeschlossen!\nDrücken Sie ENTER um das Programm zu verlassen.")
 
-        # main()
+        if __name__ == "__main__":
+            main()
       #+END_SRC
          
 *** Erstellen einer ausführbaren Datei für die BenutzerInnen
@@ -925,6 +926,26 @@ Stefan
         passiert, dass die Signatur im zu bereinigenden Holding gleich anfängt, wie
         die im Zielholding.
 *** Arbeitsablauf
+***** Allgemeine Überlegungen
+      Dieses Programm unterstützt Sie /halb/automatisch beim der Datenpflege.
+      Bevor Sie es einsetzen, stellen Sie sicher, dass Sie es mit den richtigen
+      Parametern ausführen.
+
+      Es werden sämtliche /Exemplardaten/ gesichert und können somit
+      wiederhergestellt werden. Die Holdings werden *NICHT* gesichert. Dies ist
+      so, weil davon ausgegangen wird, dass die zu löschenden Holdings
+      automatisch generiert wurden und keine Informationen enthalten, die nicht
+      auch im Exemplar stehen. Sollten Sie das Programm auf Fälle anwenden, die
+      nicht durch die Migration von Aleph nach Alma entstanden sind,
+      kontrollieren Sie, ob eines der nicht-Zielholding Informationen enthält,
+      die nicht gelöscht werden sollen.
+
+      Anhand der Logik des Programmes, die unter erklärt wird, wissen Sie,
+      welche Holdings gelöscht werden. Sollten in diesen Informationen sein, die
+      Sie behalten wollen (Buchbinderinformationen, Anmerkungen), übertragen Sie
+      diese /vorher/ ins Zielholding. Wenn nur ein solches Holding vorhanden
+      ist, nutzen Sie dieses als Zielholding.
+
 ***** MMS-ID des bibliografischen Datensatzes ermitteln
       Damit das Programm arbeiten kann brauchen wir die /lokale/ MMS-ID des
       Titeldatensatzes und die MMS-ID des Zielholdings. Am einfachsten ist es,
@@ -979,8 +1000,8 @@ Stefan
       Fügen Sie die jeweiligen Nummern in die entsprechenden Felder ein und
       klicken Sie auf "OK".
 
-      Im schwarzen Fenster das sich auch mit dem Programm geöffnet hat, sehen
-      Sie den Fortschritt der des Programms. Wenn es fertig ist, sehen Sie die
+      Im schwarzen Fenster, das sich auch mit dem Programm geöffnet hat, sehen
+      Sie den Fortschritt des Programms. Wenn es fertig ist, sehen Sie die
       Zeilen
 
       [[~/projects/multi-hol/doc/pic/verarbeitung_abgeschlossen.png]]
