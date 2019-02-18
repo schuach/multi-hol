@@ -108,3 +108,4 @@ venv.bak/
 auto/
 doc/auto/
 doc/anleitung_multi-hol.tex
+multi_hol/conf.py

@@ -1,7 +1,6 @@
 import sys
 import re
 import os
-import keyring
 import datetime
 from requests import Session
 import urllib.parse
@@ -11,6 +10,7 @@ from time import sleep
 from easygui import multenterbox
 import logging
 import getpass
+import conf
 
 # Get the users input
 def get_mmsids(msg=""):
@@ -39,14 +39,14 @@ def get_mmsids(msg=""):
         return bib_mms, target_hol_id
 
 # set up the backup
-backup_dir = os.path.join(os.path.expanduser("~"), "Dokumente", "ALMA_multi-hol")
+backup_dir = os.path.join(conf.WORKING_DIR, "backup")
 # make the directory if it does not exist
 if not os.path.exists(backup_dir):
     os.makedirs(backup_dir)
 #configure logging
 def logging_setup(bib_mms, target_hol_id):
     # now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    log_file = os.path.join(backup_dir, f"{bib_mms}_{target_hol_id}.log")
+    log_file = os.path.join(conf.WORKING_DIR, "log", f"{bib_mms}_{target_hol_id}.log")
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
     logger.propagate = False
@@ -73,13 +73,12 @@ barcode_api = base_url + "/items?item_barcode={barcode}"
 holdings_api = base_url + "/bibs/{mms_id}/holdings"
 bib_api = base_url + "/bibs/{mms_id}"
 item_api = base_url + "/bibs/{mms_id}/holdings/{holding_id}/items"
-# get api key from system keyring
-api_key = keyring.get_password("ALMA-API", "BIB-Sandbox").rstrip()
+API_KEY = conf.API_KEY
 # session um immer gleiche header zu schicken etc.
 session = Session()
 session.headers.update({
     "accept": "application/json",
-    "authorization": f"apikey {api_key}"
+    "authorization": f"apikey {API_KEY}"
 })
 
 # function for backing up JSON to disk
