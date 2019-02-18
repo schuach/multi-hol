@@ -967,26 +967,37 @@ Stefan
 
       Kopieren Sie die Nummer hinein.
 ***** Das Ziel-Holding identifizieren/anlegen
-      In den allermeisten Fällen müssen Sie das Zielholding neu anlegen. Das
-      geht aber recht schnell:
+******* Es ist bereits ein passendes Zielholding vorhanden
+        Wenn bereits ein Holding vorhanden ist, das als Zielholding für
+        überzählige Hols dienen kann, kopieren Sie die MMS-ID dieses Holdings in
+        den Editor.
 
-      1. Suchen Sie ein beliebiges Holding am gleichen Standort, mit der
-         Grundsignatur, die Sie brauchen und öffnen Sie dieses im Metadateneditor
-         zum bearbeiten
-      2. Klicken Sie auf [Datei -> Duplizieren]
-      3. Im duplizierten Holding (erkennbar am ausgegrauten Symbol) löschen Sie
-         den hinteren Teil der Signatur, sodass nur die Grundsignatur übrig bleibt:
-      
-         [[~/projects/multi-hol/doc/pic/dupliziertes_hol.png]]
-      4. Klicken sie auf =Speichern=
-      5. Kopieren Sie die MMS-ID des Holdings (siehe den grünen Pfeil im Bild bei
-         Punkt 3) auch in den Editor. Die MMS-ID eines Holdings beginnt immer
-         mit =22= und endet mit =3339=. Im Bild sehen Sie das Editorfenster mit
-         der MMS-ID des Bibsatzes in der ersten und der des Holdings in der
-         zweiten Zeile.
-         
-        #+ATTR_LATEX: :width 6cm
-         [[~/projects/multi-hol/doc/pic/mmsid_editor.png]]
+        *ACHTUNG:* Wenn an diesem Holding bereits Exemplare vorhanden sind, muss
+         die Alternative Signatur aller dieser Exemplare unbedingt bereits VOR der
+         Bearbeitung durch das Programm korrekt sein. Es kann sonst dazu kommen,
+         dass Teile der alternativen Signatur verloren gehen.
+******* Es ist kein passendes Zielholding vorhanden
+        In den allermeisten Fällen müssen Sie das Zielholding neu anlegen. Das
+        geht aber recht schnell:
+
+        1. Suchen Sie ein beliebiges Holding am gleichen Standort, mit der
+          Grundsignatur, die Sie brauchen und öffnen Sie dieses im Metadateneditor
+          zum bearbeiten
+        2. Klicken Sie auf [Datei -> Duplizieren]
+        3. Im duplizierten Holding (erkennbar am ausgegrauten Symbol) löschen Sie
+          den hinteren Teil der Signatur, sodass nur die Grundsignatur übrig bleibt:
+
+          [[~/projects/multi-hol/doc/pic/dupliziertes_hol.png]]
+        4. Klicken sie auf =Speichern=
+        5. Kopieren Sie die MMS-ID des Holdings (siehe den grünen Pfeil im Bild bei
+          Punkt 3) auch in den Editor. Die MMS-ID eines Holdings beginnt immer
+          mit =22= und endet mit =3339=. Im Bild sehen Sie das Editorfenster mit
+          der MMS-ID des Bibsatzes in der ersten und der des Holdings in der
+          zweiten Zeile.
+
+          #+ATTR_LATEX: :width 6cm
+          [[~/projects/multi-hol/doc/pic/mmsid_editor.png]]
+
 ***** Das Programm ausführen
       Jetzt, wo Sie das Zielholding angelegt haben und die MMS-IDs vom
       bibliografischen Datensatz und vom Holding in den Editor kopiert haben,
