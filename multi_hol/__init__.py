@@ -1,1 +1,1 @@
-from .multi_hol import *
+from .conf import *

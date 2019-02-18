@@ -158,7 +158,7 @@
         from easygui import multenterbox
         import logging
         import getpass
-        import conf
+        from .conf import config
       #+END_SRC
 
       - =sys= :: um Kommandozeilenargumente entgegenzunehmen (=sys.argv=) oder
@@ -181,10 +181,11 @@
            und Zielholding zu bekommen
       - =logging= :: um zu loggen
       - =getpass= :: damit wir fürs loggen den Usernamen abfragen können
-      - =conf= :: lokale Konfiguration in der Datei =conf.py=. Aus dieser Datei
-                  holen wir uns den API_KEY und das Arbeitsverzeichnis. Nachdem
-                  man dort den API_KEY hineinschreibt, sollte diese Datei
-                  in =.gitignore=.
+      - =.conf= :: lokale Konfiguration in der Datei =conf.py=. Aus dieser Datei
+                   stehen Konstanten im dictionary =config=. Von dort holen wir
+                   uns den API_KEY und das Arbeitsverzeichnis. Nachdem man dort
+                   den API_KEY hineinschreibt, sollte diese Datei in
+                   =.gitignore= stehen.
       
 ***** DONE Logging
       CLOSED: [2019-01-04 Fr 13:58]
@@ -200,7 +201,7 @@
       #+begin_src python
         def logging_setup(bib_mms, target_hol_id):
             # now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-            log_file = os.path.join(conf.WORKING_DIR, "log", f"{bib_mms}_{target_hol_id}.log")
+            log_file = os.path.join(config["WORKING_DIR"], "log", f"{bib_mms}_{target_hol_id}.log")
             logger = logging.getLogger(__name__)
             logger.setLevel(logging.DEBUG)
             logger.propagate = False
@@ -255,7 +256,7 @@
 
       #+NAME: API-key
       #+BEGIN_SRC python
-      API_KEY = conf.API_KEY
+      API_KEY = config["API_KEY"]
       #+END_SRC
       
 *** Verarbeitung      
@@ -453,7 +454,7 @@
         
         #+NAME: configure-backup
         #+BEGIN_SRC python
-          backup_dir = os.path.join(conf.WORKING_DIR, "backup")
+          backup_dir = os.path.join(config["WORKING_DIR"], "backup")
           # make the directory if it does not exist
           if not os.path.exists(backup_dir):
               os.makedirs(backup_dir)
@@ -849,13 +850,16 @@ Stefan
   - [[https://developers.exlibrisgroup.com/alma/apis/xsd/rest_item.xsd][Item-Object]]
 
 * Beispiel für ein =conf.py=
-  #+BEGIN_SRC python :noweb yes :tangle multi_hol/conf.py
+  #+BEGIN_SRC python
     import os
     import keyring
 
-    WORKING_DIR = os.path.join(os.path.expanduser("~"), "Y", "MULTI-HOL", "TEST")
-    # get api key from system keyring
-    API_KEY = keyring.get_password("ALMA-API", "BIB-Sandbox").rstrip()
+    config = {
+        "WORKING_DIR": os.path.join( "Y:", os.sep, "MULTI-HOL", "TEST"),
+        # get api key from system keyring
+        "API_KEY": keyring.get_password("ALMA-API", "BIB-Sandbox").rstrip()
+        }
+
   #+END_SRC
 
 * Dokumentation für BearbeiterInnen

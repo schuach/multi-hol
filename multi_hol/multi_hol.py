@@ -10,7 +10,7 @@ from time import sleep
 from easygui import multenterbox
 import logging
 import getpass
-import conf
+from .conf import config
 
 # Get the users input
 def get_mmsids(msg=""):
@@ -39,14 +39,14 @@ def get_mmsids(msg=""):
         return bib_mms, target_hol_id
 
 # set up the backup
-backup_dir = os.path.join(conf.WORKING_DIR, "backup")
+backup_dir = os.path.join(config["WORKING_DIR"], "backup")
 # make the directory if it does not exist
 if not os.path.exists(backup_dir):
     os.makedirs(backup_dir)
 #configure logging
 def logging_setup(bib_mms, target_hol_id):
     # now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-    log_file = os.path.join(conf.WORKING_DIR, "log", f"{bib_mms}_{target_hol_id}.log")
+    log_file = os.path.join(config["WORKING_DIR"], "log", f"{bib_mms}_{target_hol_id}.log")
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.DEBUG)
     logger.propagate = False
@@ -73,7 +73,7 @@ barcode_api = base_url + "/items?item_barcode={barcode}"
 holdings_api = base_url + "/bibs/{mms_id}/holdings"
 bib_api = base_url + "/bibs/{mms_id}"
 item_api = base_url + "/bibs/{mms_id}/holdings/{holding_id}/items"
-API_KEY = conf.API_KEY
+API_KEY = config["API_KEY"]
 # session um immer gleiche header zu schicken etc.
 session = Session()
 session.headers.update({
