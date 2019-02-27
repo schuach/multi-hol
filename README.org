@@ -1,0 +1,16 @@
+* Bereinigung von mehrfach-Holdings nach der Migration zu Alma
+*** Allgemeines
+    Wenn es in Aleph mehrere Exemplare aber kein Holding an einem bibliografischen
+    Datensatz gegeben hat, wurde bei der Migration nach Alma für jedes Exemplar
+    ein Holding gebildet. =multi-hol= hilft bei der halbautomatischen Bereinigung
+    dieser Fälle.
+*** Dokumentation
+    Die Dokumentation für das Script findet sich im Ordner =doc=.
+    - =anleitung_multi-hol.pdf= :: Anleitung für die BearbeiterInnen
+    - =doc.html= :: Technische Dokumentation. Hier wird das Programm genau
+                    besprochen. Wenn Sie das Programm für Ihre Institution
+                    verwenden wollen, müssen Sie natürlich entsprechende
+                    Anpassungen vornehmen. Dafür ist dieses Dokument hilfreich.
+*** Lizenz
+    MIT. Siehe =LICENSE=.
+
