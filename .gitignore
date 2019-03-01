@@ -106,6 +106,7 @@ venv.bak/
 # diverse
 .directory
 auto/
+data/
 doc/auto/
 doc/anleitung_multi-hol.tex
 multi_hol/conf.py

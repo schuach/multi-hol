@@ -185,7 +185,8 @@
                    stehen Konstanten im dictionary =config=. Von dort holen wir
                    uns den API_KEY und das Arbeitsverzeichnis. Nachdem man dort
                    den API_KEY hineinschreibt, sollte diese Datei in
-                   =.gitignore= stehen.
+                   =.gitignore= stehen.  Wie sie aussehen sollte können Sie im Abschnitt
+                   [[Beispiel f%C3%BCr conf.py][Beispiel für conf.py]] sehen.
       
 ***** DONE Logging
       CLOSED: [2019-01-04 Fr 13:58]
@@ -674,7 +675,7 @@ Stefan
       
 *** Alles Zusammensetzen
 ***** Das Modul
-      #+BEGIN_SRC python :noweb yes :tangle multi_hol/multi_hol.py
+      #+BEGIN_SRC python -n :noweb yes :tangle multi_hol/multi_hol.py
         <<imports>>
 
         # Get the users input
@@ -745,7 +746,7 @@ Stefan
     Linux- oder Mac-System sein, sondern Bibliothekarinnen mit Windows.
     Unter Windows ist, im Gegensatz zu den landläufigen Linux-Distros oder OSX,
     Python nicht standardmäßig installiert. Es reicht also nicht das Script mit
-    ~chmod +x multi-hol.py~ ausführbar zu machen.
+    ~chmod +x app_multi-hol.py~ ausführbar zu machen.
 
     Es muss eine exe-Datei erstellt werden. Das geht am einfachsten mit dem
     Modul =pyinstaller=, das via =pip= verfügbar ist. =pynistaller= ist nicht in
@@ -764,11 +765,15 @@ Stefan
       pip install pyinstaller
     #+end_src
 
-    Danach sollten Sie in =multi-hol/multi-hol.py= in die Variable =API_KEY=
-    Ihren API-Key eintragen. Wie oben erwähnt verwende ich während der
-    Entwicklung den Keyring des Systems, für die Deployment-Version muss er aber
-    tatsächlich hier stehen. Vergessen Sie nicht, ihn danach wieder zu löschen
-    (vor allem, falls Sie Ihre Version dieses Repos auf GitHub hosten ...).
+    Danach sollten Sie in =multi-hol/conf.py= in das dict =config= Ihren API-Key
+    eintragen. Wie oben erwähnt verwende ich während der Entwicklung den Keyring
+    des Systems, für die Deployment-Version muss er aber tatsächlich hier
+    stehen. Daher steht diese Datei bei mir in =.gitignore=. Vergessen Sie
+    nicht, ihn danach wieder zu löschen (vor allem, falls Sie Ihre Version
+    dieses Repos auf GitHub hosten ...). Auch in =config= kommt das
+    Arbeitsverzeichnis, in das die Backups und die logs geschrieben werden
+    sollen. Nachdem =multi-hol/conf.py= bei mir in =.gitignore= steht, sehen sie
+    im Abschnitt [[Beispiel f%C3%BCr conf.py][Beispiel für conf.py]], wie diese Datei aussehen sollte.
 
     Danach führen Sie folgende Zeile aus, um die ausführbare Datei zu erstellen.
     Das Flag -F macht, dass alles in eine einzelne Datei gepackt wird, anstatt
@@ -776,11 +781,11 @@ Stefan
 
     #+begin_src shell
       # run pyinstaller
-      pyinstaller -F multi-hol/multi-hol.py
+      pyinstaller -F app_multi-hol.py
     #+end_src
 
     Das war es auch schon. Sie sollten im Ordner =dist= die Datei
-    =multi-hol.exe= finden.
+    =app_multi-hol.exe= finden.
 
 *** Tests                                                          :noexport:
     Natürlich will das alles gut getestet sein.
@@ -849,7 +854,8 @@ Stefan
   - [[https://developers.exlibrisgroup.com/alma/apis/bibs/POST/gwPcGly021om4RTvtjbPleCklCGxeYAfEqJOcQOaLEvNcHQT0/ozqu3DGTurs/XxIP4LrexQUdc=/af2fb69d-64f4-42bc-bb05-d8a0ae56936e][Create Item]]
   - [[https://developers.exlibrisgroup.com/alma/apis/xsd/rest_item.xsd][Item-Object]]
 
-* Beispiel für ein =conf.py=
+* Beispiel für conf.py
+  Die Datei =multi_hol/conf.py= sollte ungefähr so aussehen:
   #+BEGIN_SRC python
     import os
     import keyring
@@ -861,6 +867,11 @@ Stefan
         }
 
   #+END_SRC
+
+  =WORKING_DIR= ist das Verzeichnis, in dem die Sicherungen gemacht werden etc.
+  =API_KEY= hier kommt ihr API-Key hin. Ich hole ihn aus dem Keyring des
+  Systems. Wenn Sie mit =pyinstaller= eine ausführbare Datei erstellen, müssen
+  sie den String hier auf jeden fall direkt eintragen.
 
 * Dokumentation für BearbeiterInnen
   :PROPERTIES:
