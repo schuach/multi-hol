@@ -989,6 +989,19 @@ Stefan
       diese /vorher/ ins Zielholding. Wenn nur ein solches Holding vorhanden
       ist, nutzen Sie dieses als Zielholding.
 
+***** Vor dem Ausführen prüfen ob es Bestellposten an Quellholdings gibt
+      Wenn mit einem Nicht-Zielholding eine Bestellnummer verknüpft ist, kann
+      das zu Fehlern führen, bei denen Exemplare verloren gehen. Diese können
+      zwar wieder hergestellt werden, aber das ist aufwändig und vermeidbar.
+      Bitte daher vorher prüfen, ob eines der Quellholdings mit einem
+      Bestellposten verbunden ist. Wenn das der Fall ist, bitte den
+      Bestellposten von diesem Holding lösen. Nachdem die Bereinigung
+      abgeschlossen ist, kann das Zielholding bei Bedarf mit diesem
+      Bestellposten verbunden werden.
+
+      Vergleichen Sie zur Sicherheit immer die Gesamtzahl der Exemplare vor und
+      nach der Ausführung des Programms. Sie sollte gleich bleiben.
+
 ***** MMS-ID des bibliografischen Datensatzes ermitteln
       Damit das Programm arbeiten kann brauchen wir die /lokale/ MMS-ID des
       Titeldatensatzes und die MMS-ID des Zielholdings. Am einfachsten ist es,
