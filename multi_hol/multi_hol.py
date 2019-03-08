@@ -9,6 +9,7 @@ import json
 from time import sleep
 from easygui import multenterbox
 import logging
+import logging.config
 import getpass
 from .conf import config
 
@@ -46,11 +47,40 @@ if not os.path.exists(backup_dir):
 #configure logging
 def logging_setup(bib_mms, target_hol_id):
     log_file = os.path.join(config["WORKING_DIR"], "log", f"{bib_mms}_{target_hol_id}.log")
-    logging.basicConfig(level=logging.DEBUG,
-                        format='%(asctime)s - %(levelname)s - %(message)s',
-                        handlers=[logging.FileHandler(log_file),
-                                  logging.StreamHandler()])
+    # logging.basicConfig(level=logging.DEBUG,
+    #                     format='%(asctime)s - %(levelname)s - %(message)s',
+    #                     handlers=[logging.FileHandler(log_file),
+    #                               logging.StreamHandler()])
 
+    logging.config.dictConfig({
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'formatter': {
+                'format': '%(asctime)s %(levelname)s %(message)s',
+            },
+        },
+        'handlers': {
+            'stderr': {
+                'class': 'logging.StreamHandler',
+                'formatter': 'formatter',
+                'level': 'INFO',
+            },
+            'log_file': {
+                'class': 'logging.FileHandler',
+                'filename': log_file,
+                'mode': 'a',
+                'formatter': 'formatter',
+                'level': 'DEBUG',
+            },
+        },
+        'loggers': {
+            '': {
+                'level': 'DEBUG',
+                'handlers': ['stderr', 'log_file'],
+            },
+        },
+    })
 
 # get everything ready for making the API-Calls
 # api-url-templates
@@ -247,7 +277,8 @@ def move_item(item, bib_mms, target_hol_id):
             tries += 1
         else:
             error = post_item_response["errorList"]["error"][0]["errorMessage"]
-            (f"move_item(): unerwarteter Fehler bei POST {error}")
+            error_code = post_item_response["errorList"]["error"][0]["errorCode"]
+            logging.error(f"move_item(): unerwarteter Fehler bei POST: {error}; code: {error_code}")
             break
 
 def main():
