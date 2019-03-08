@@ -897,7 +897,7 @@ Stefan
   :PROPERTIES:
   :EXPORT_FILE_NAME: doc/anleitung_multi-hol.pdf
   :EXPORT_OPTIONS: toc:t num:t
-  :EXPORT_DATE: 2019-01-22
+  :EXPORT_DATE: 2019-03-08
   :END:
 *** *DIESEN ABSCHNITT IM LaTeX-EXPORT ENTFERNEN*                   :noexport:
     Die Bilder im Handbuch funktionieren im HTML-Export nicht. Es ist derzeit
