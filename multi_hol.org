@@ -198,31 +198,39 @@
       Dateinamen die MMS-IDs brauchen holen wir uns selbige schon, bevor wir den
       logger konfigurieren ([[MMS-IDs]]).
       
-      #+NAME: logging-setup
       #+begin_src python
         def logging_setup(bib_mms, target_hol_id):
             # now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
             log_file = os.path.join(config["WORKING_DIR"], "log", f"{bib_mms}_{target_hol_id}.log")
             logger = logging.getLogger(__name__)
-            logger.setLevel(logging.DEBUG)
-            logger.propagate = False
+            logging.setLevel(logging.DEBUG)
+            # logging.propagate = False
 
             # add handlers
             log_stream_handler = logging.StreamHandler(sys.stdout)
             log_stream_handler.setLevel(logging.INFO)
             log_stream_handler.setFormatter(
                 logging.Formatter('%(levelname)s: %(message)s'))
-            logger.addHandler(log_stream_handler)
+            logging.addHandler(log_stream_handler)
 
             log_file_handler = logging.FileHandler(log_file)
             log_file_handler.setLevel(logging.DEBUG)
             log_file_handler.setFormatter(
                 logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
-            logger.addHandler(log_file_handler)
+            logging.addHandler(log_file_handler)
 
             return logger
       #+end_src
-      
+      #+NAME: logging-setup
+      #+begin_src python
+        def logging_setup(bib_mms, target_hol_id):
+            log_file = os.path.join(config["WORKING_DIR"], "log", f"{bib_mms}_{target_hol_id}.log")
+            logging.basicConfig(level=logging.DEBUG,
+                                format='%(asctime)s - %(levelname)s - %(message)s',
+                                handlers=[logging.FileHandler(log_file),
+                                          logging.StreamHandler()])
+
+      #+END_src
 ***** Voreinstellungen für die APIs
       Nachdem wir viele Calls machen werden, ist es wohl gut, die APIs in
       Variablen mit benannten Platzhaltern zu schreiben, sodass wir dann nur
@@ -332,12 +340,12 @@
             if item_list.status_code == 200:
                 item_list = item_list.json()
             else:
-                logger.error(f"Fehler beim Holen der Daten: {item_list.text}")
+                logging.error(f"Fehler beim Holen der Daten: {item_list.text}")
                 input("Drücken Sie ENTER um das Programm zu beenden.")
                 sys.exit(1)
 
             # append the items to the list to be returned, if they pass the tests
-            logger.debug("get_items(): Items zur outlist hinzufügen")
+            logging.debug("get_items(): Items zur outlist hinzufügen")
             for item in item_list["item"]:
                 if check_bch(item, hol_bch):
                     outlist.append(item)
@@ -347,21 +355,21 @@
             if total_record_count > 100:
                 # calculate number of needed additional calls
                 add_calls = total_record_count // 100
-                logger.debug(f"get_items(): {total_record_count} items vorhanden, {add_calls} weitere API-calls notwendig.")
+                logging.debug(f"get_items(): {total_record_count} items vorhanden, {add_calls} weitere API-calls notwendig.")
                 # make the additional calls and add answer to the outlist
                 for i in range(add_calls):
                     offset = (i + 1) * 100
-                    logger.debug(f"get_items(): additional call {offset}")
+                    logging.debug(f"get_items(): additional call {offset}")
 
                     next_list = session.get(item_api.format(mms_id=mms_id, holding_id="ALL"),
                                             params={"limit": "100", "offset": offset}).json()
-                    logger.debug(f"get_items(): weitere items zu outlist hinzufügen (call {offset}/{add_calls})")
+                    logging.debug(f"get_items(): weitere items zu outlist hinzufügen (call {offset}/{add_calls})")
                     for item in next_list["item"]:
                         if check_bch(item, hol_bch):
                             outlist.append(item)
 
             # DONE save the item list to disk
-            logger.info("Schreibe Backup.")
+            logging.info("Schreibe Backup.")
             backup_file = os.path.join(backup_dir, f"{mms_id}_{hol_bch[0]}_{hol_bch[1]}_{hol_bch[2].replace('.', '').replace(',', '').replace('/', '').replace(' ', '-')}")
             save_json(outlist, backup_file)
             return outlist
@@ -385,7 +393,7 @@
                 c = holxml.find('.//*[@tag="852"]/*[@code="c"]').text
                 h = holxml.find('.//*[@tag="852"]/*[@code="h"]').text
             except:
-                logger.exception("Fehler beim Lesen des Zielholdings (XML).")
+                logging.exception("Fehler beim Lesen des Zielholdings (XML).")
                 print("Ein Fehler ist aufgetreten. Kontrollieren Sie die Log-Datei.")
                 input("Drücken Sie ENTER um das Programm zu beenden.")
                 sys.exit(1)
@@ -598,31 +606,31 @@
             title = item["bib_data"]["title"]
             target = item_api.format(mms_id=bib_mms, holding_id=target_hol_id)
             if not target_hol_id in item["link"]:
-                logger.debug(f"move_item(): lösche {barcode}")
+                logging.debug(f"move_item(): lösche {barcode}")
                 delete_item_response = session.delete(item["link"], params={"holdings": "delete"})
             else:
-                logger.debug(f"move_item(): lösche {barcode}")
+                logging.debug(f"move_item(): lösche {barcode}")
                 delete_item_response = session.delete(item["link"], params={"holdings": "retain"})
 
             if not delete_item_response.status_code == 204:
-                logger.error(f"move_item(): löschen fehlgeschlagen bei {barcode}. {delete_item_response.text}")
+                logging.error(f"move_item(): löschen fehlgeschlagen bei {barcode}. {delete_item_response.text}")
                 return
 
             # post the item. Wait for 1 second before that, so that Alma can update the
             # barcode index. Try again, if barcode index is not updated.
             sleep(1)
             tries = 0
-            logger.debug(f"move_item(): POST von {barcode}")
+            logging.debug(f"move_item(): POST von {barcode}")
             post_item_response = session.post(target, json=item).json()
             while "errorsExist" in post_item_response:
                 if tries > 5:
                     error = post_item_response["errorList"]["error"][0]["errorMessage"]
                     # errors.append([bib_mms, barcode, title, error])
-                    logger.error(f"move_item(): {barcode} Fünfter POST-Versuch fehlgeschlagen, Abbruch.")
+                    logging.error(f"move_item(): {barcode} Fünfter POST-Versuch fehlgeschlagen, Abbruch.")
                     break
                 elif post_item_response["errorList"]["error"][0]["errorCode"] == "401873":
                     # if the error is an existing barcode, try again
-                    logger.info(f"move_item(): {barcode}: weiterer POST-Versuch ({tries + 1}x)")
+                    logging.info(f"move_item(): {barcode}: weiterer POST-Versuch ({tries + 1}x)")
                     sleep(1)
                     post_item_response = session.post(target, json=item).json()
                     tries += 1
@@ -718,21 +726,21 @@ Stefan
             logger = logging_setup(bib_mms, target_hol_id)
 
             # log who started the program
-            logger.debug(f"Programm gestartet von {getpass.getuser()}.")
-            logger.debug(f"bib_mms: {bib_mms}, target_hol_id: {target_hol_id}")
+            logging.debug(f"Programm gestartet von {getpass.getuser()}.")
+            logging.debug(f"bib_mms: {bib_mms}, target_hol_id: {target_hol_id}")
 
             # do your work
-            logger.info("Hole Daten von Alma ...")
+            logging.info("Hole Daten von Alma ...")
             item_list = get_items(bib_mms, target_hol_id)
             item_count = len(item_list)
-            logger.info(f"Zu bearbeitende Exemplare: {item_count}")
+            logging.info(f"Zu bearbeitende Exemplare: {item_count}")
 
             for idx, item in enumerate(item_list):
-                logger.info(f"Exemplar {idx + 1} von {item_count}: {item['item_data']['barcode']}")
-                logger.info("Bearbeite Exemplardaten ...")
+                logging.info(f"Exemplar {idx + 1} von {item_count}: {item['item_data']['barcode']}")
+                logging.info("Bearbeite Exemplardaten ...")
                 change_item_information(item)
 
-                logger.info("Verschieben an Zielholding ...")
+                logging.info("Verschieben an Zielholding ...")
                 move_item(item, bib_mms, target_hol_id)
 
             input("Verarbeitung abgeschlossen!\nDrücken Sie ENTER um das Programm zu verlassen.")
