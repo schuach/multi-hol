@@ -645,6 +645,12 @@
                     sleep(1)
                     post_item_response = session.post(target, json=item).json()
                     tries += 1
+                elif post_item_response["errorList"]["error"][0]["errorCode"] == "401871":
+                    error = post_item_response["errorList"]["error"][0]["errorMessage"]
+                    error_code = post_item_response["errorList"]["error"][0]["errorCode"]
+                    logging.warning(f"move_item(): Fehler bei POST: {error}. Item wird ohne Bestellnummer verarbeitet")
+                    item["item_data"]["po_line"] = ""
+                    post_item_response = session.post(target, json=item).json()
                 else:
                     error = post_item_response["errorList"]["error"][0]["errorMessage"]
                     error_code = post_item_response["errorList"]["error"][0]["errorCode"]
