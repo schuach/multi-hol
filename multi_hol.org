@@ -216,21 +216,24 @@
                 'version': 1,
                 'disable_existing_loggers': False,
                 'formatters': {
-                    'formatter': {
+                    'logfile_formatter': {
                         'format': '%(asctime)s %(levelname)s %(message)s',
+                    },
+                    'stderr_formatter': {
+                        'format' : '%(levelname)s %(message)s',
                     },
                 },
                 'handlers': {
                     'stderr': {
                         'class': 'logging.StreamHandler',
-                        'formatter': 'formatter',
+                        'formatter': 'stderr_formatter',
                         'level': 'INFO',
                     },
                     'log_file': {
                         'class': 'logging.FileHandler',
                         'filename': log_file,
                         'mode': 'a',
-                        'formatter': 'formatter',
+                        'formatter': 'logfile_formatter',
                         'level': 'DEBUG',
                     },
                 },
@@ -648,7 +651,7 @@
                 elif post_item_response["errorList"]["error"][0]["errorCode"] == "401871":
                     error = post_item_response["errorList"]["error"][0]["errorMessage"]
                     error_code = post_item_response["errorList"]["error"][0]["errorCode"]
-                    logging.warning(f"move_item(): Fehler bei POST: {error}. Item wird ohne Bestellnummer verarbeitet")
+                    logging.warning(f"move_item(): Fehler bei POST: {error} Item wird ohne Bestellnummer verarbeitet.")
                     item["item_data"]["po_line"] = ""
                     post_item_response = session.post(target, json=item).json()
                 else:
@@ -995,18 +998,22 @@ Stefan
       diese /vorher/ ins Zielholding. Wenn nur ein solches Holding vorhanden
       ist, nutzen Sie dieses als Zielholding.
 
-***** Vor dem Ausführen prüfen ob es Bestellposten an Quellholdings gibt
-      Wenn mit einem Nicht-Zielholding eine Bestellnummer verknüpft ist, kann
-      das zu Fehlern führen, bei denen Exemplare verloren gehen. Diese können
-      zwar wieder hergestellt werden, aber das ist aufwändig und vermeidbar.
-      Bitte daher vorher prüfen, ob eines der Quellholdings mit einem
-      Bestellposten verbunden ist. Wenn das der Fall ist, bitte den
-      Bestellposten von diesem Holding lösen. Nachdem die Bereinigung
-      abgeschlossen ist, kann das Zielholding bei Bedarf mit diesem
-      Bestellposten verbunden werden.
+      *Vergleichen Sie zur Sicherheit immer die Gesamtzahl der Exemplare vor und
+      nach der Ausführung des Programms.* Sie sollte gleich bleiben.
 
-      Vergleichen Sie zur Sicherheit immer die Gesamtzahl der Exemplare vor und
-      nach der Ausführung des Programms. Sie sollte gleich bleiben.
+***** Vor dem Ausführen prüfen ob es Bestellposten an Quellholdings gibt
+      Wenn mit einem Nicht-Zielholding eine Bestellnummer verknüpft ist, geht
+      diese Bestellnummer im Laufe der Verarbeitung verloren. Falls Sie ihr
+      Ziel-Holding mit der Bestellung verknüpfen wollen, so notieren Sie die
+      Bestellnummer und machen Sie die Verknüpfung /nachdem/ die Verarbeitung
+      abgeschlossen ist. Die mit den einzelnen Holdings verknüpften
+      Bestellummern (die verworfen werden) werden in der Ausgabe des Programms
+      in je einer Zeile angezeigt, die ungefähr so aussieht:
+
+      =WARNING move_item(): Fehler bei POST: PoLine 0000003139 not found.
+       Item wird ohne Bestellnummer verarbeitet.=
+
+      Die Bestellung bleibt dabei unangetastet.
 
 ***** MMS-ID des bibliografischen Datensatzes ermitteln
       Damit das Programm arbeiten kann brauchen wir die /lokale/ MMS-ID des

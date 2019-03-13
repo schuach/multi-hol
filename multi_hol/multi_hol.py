@@ -56,21 +56,24 @@ def logging_setup(bib_mms, target_hol_id):
         'version': 1,
         'disable_existing_loggers': False,
         'formatters': {
-            'formatter': {
+            'logfile_formatter': {
                 'format': '%(asctime)s %(levelname)s %(message)s',
+            },
+            'stderr_formatter': {
+                'format' : '%(levelname)s %(message)s',
             },
         },
         'handlers': {
             'stderr': {
                 'class': 'logging.StreamHandler',
-                'formatter': 'formatter',
+                'formatter': 'stderr_formatter',
                 'level': 'INFO',
             },
             'log_file': {
                 'class': 'logging.FileHandler',
                 'filename': log_file,
                 'mode': 'a',
-                'formatter': 'formatter',
+                'formatter': 'logfile_formatter',
                 'level': 'DEBUG',
             },
         },
@@ -278,7 +281,7 @@ def move_item(item, bib_mms, target_hol_id):
         elif post_item_response["errorList"]["error"][0]["errorCode"] == "401871":
             error = post_item_response["errorList"]["error"][0]["errorMessage"]
             error_code = post_item_response["errorList"]["error"][0]["errorCode"]
-            logging.warning(f"move_item(): Fehler bei POST: {error}. Item wird ohne Bestellnummer verarbeitet")
+            logging.warning(f"move_item(): Fehler bei POST: {error} Item wird ohne Bestellnummer verarbeitet.")
             item["item_data"]["po_line"] = ""
             post_item_response = session.post(target, json=item).json()
         else:
