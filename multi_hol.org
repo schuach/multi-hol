@@ -6,7 +6,7 @@
 #+DESCRIPTION:
 #+KEYWORDS:
 #+LANGUAGE: de
-#+OPTIONS: tex:t todo:nil pri:nil tags:t texht:nil ':t
+#+OPTIONS: tex:t todo:nil pri:nil tags:t texht:nil ':t ^:nil
 #+OPTIONS: author:t creator:nil email:t date:t
 #+LATEX_CLASS: koma-article
 #+LATEX_CLASS_OPTIONS: [10pt, a4paper]
@@ -609,7 +609,21 @@
       3. Das Exemplar mit einem POST-request ans Zielholding hängen.
 
       Der erste Schritt, wird oben abgearbeitet, die beiden weiteren werden in
-      der Funktion =move_item()= abgehandelt:
+      der Funktion =move_item()= abgehandelt.
+
+      Wenn Bestellposten vorhanden sind, führt das je nach Sachverhalt zu
+      Fehlern beim DELETE oder beim POST. Die möglichen Sacherverhalte sind:
+
+      - Bestellposten vorhanden, der sich auf das Item bezieht :: Hier gibt es
+           einen Fehler beim DELETE, weil Items mit verknüpfter POL nicht
+           gelöscht werden können. Damit gehen wir um, indem wir die POL
+           löschen, dann das Item löschen und beim POST die POL wieder
+           hineinschreiben.
+      - Mit dem Holding verknüpfter Bestellposten wird geerbt :: Hier gibt es
+           einen Fehler beim POST, weil ein Bestellposten dieses Typs nicht im
+           Item stehen darf. Nachdem man nur einen Bestellposten mit einem
+           Holding verknüpfen kann, wird der Bestllposten in diesem Fall
+           verworfen. Die Bestellung selbst bleibt davon unberührt.
 
       #+NAME: move-item
       #+BEGIN_SRC python :noweb yes
@@ -617,18 +631,40 @@
             """Move items to other holding and delete source-holding"""
             # delete the items, but prevent the target-hol from being deleted
             barcode = item["item_data"]["barcode"]
-            title = item["bib_data"]["title"]
             target = item_api.format(mms_id=bib_mms, holding_id=target_hol_id)
-            if not target_hol_id in item["link"]:
-                logging.debug(f"move_item(): lösche {barcode}")
-                delete_item_response = session.delete(item["link"], params={"holdings": "delete"})
-            else:
-                logging.debug(f"move_item(): lösche {barcode}")
-                delete_item_response = session.delete(item["link"], params={"holdings": "retain"})
+            def delete_item(item):
+                if not target_hol_id in item["link"]:
+                    logging.debug(f"move_item(): lösche {barcode}")
+                    delete_item_response = session.delete(item["link"], params={"holdings": "delete"})
+                else:
+                    logging.debug(f"move_item(): lösche {barcode}")
+                    delete_item_response = session.delete(item["link"], params={"holdings": "retain"})
+                return delete_item_response
 
-            if not delete_item_response.status_code == 204:
-                logging.error(f"move_item(): löschen fehlgeschlagen bei {barcode}. {delete_item_response.text}")
-                return
+            delete_item_response = delete_item(item)
+            # check for errors in the deletion process
+            while delete_item_response.status_code != 204:
+                delete_res_json = delete_item_response.json()
+                if delete_res_json["errorList"]["error"][0]["errorCode"] == "401849":
+                    # can't delete item because of POL
+                    error = delete_res_json["errorList"]["error"][0]["errorMessage"].strip()
+                    logging.warning(f"move_item(): Fehler bei DELETE: {error} Versuche ohne POL zu löschen.")
+
+                    # delete POL and put it
+                    pol = item["item_data"]["po_line"]
+                    item["item_data"]["po_line"] = ""
+                    put_item_response = session.put(item["link"],json=item).json()
+                    if "errorsExist" in put_item_response:
+                        error = put_item_response["errorList"]["error"][0]["errorMessage"]
+                        error_code = put_item_response["errorList"]["error"][0]["errorCode"]
+                        logging.error(f"move_item(): unerwarteter Fehler bei PUT: {error}; code: {error_code}")
+                        return
+                    else:
+                        delete_item_response = delete_item(item)
+                        item["item_data"]["po_line"] = pol
+                else:
+                    logging.error(f"move_item(): löschen fehlgeschlagen bei {barcode}. {delete_item_response.text}")
+                    return
 
             # post the item. Wait for 1 second before that, so that Alma can update the
             # barcode index. Try again, if barcode index is not updated.
@@ -639,7 +675,6 @@
             while "errorsExist" in post_item_response:
                 if tries > 5:
                     error = post_item_response["errorList"]["error"][0]["errorMessage"]
-                    # errors.append([bib_mms, barcode, title, error])
                     logging.error(f"move_item(): {barcode} Fünfter POST-Versuch fehlgeschlagen, Abbruch.")
                     break
                 elif post_item_response["errorList"]["error"][0]["errorCode"] == "401873":
@@ -649,6 +684,7 @@
                     post_item_response = session.post(target, json=item).json()
                     tries += 1
                 elif post_item_response["errorList"]["error"][0]["errorCode"] == "401871":
+                    # po_line (most likely inherited from holding) not found
                     error = post_item_response["errorList"]["error"][0]["errorMessage"]
                     error_code = post_item_response["errorList"]["error"][0]["errorCode"]
                     logging.warning(f"move_item(): Fehler bei POST: {error} Item wird ohne Bestellnummer verarbeitet.")
@@ -661,46 +697,50 @@
                     break
       #+END_SRC
 
+      
+******* Problem mit der API # 
 ******* Problem mit der API # 00580797                  :Salesforce:noexport:
-Dear Support Team,
+        #+BEGIN_QUOTE
+        Dear Support Team,
 
-we need to move items from one holding to another via API. As I understand it, the way to go is to delete the item in one place and create it again by POSTing it at the target holding -- if there is a better/more efficient way, I'm glad to hear it.
+        we need to move items from one holding to another via API. As I understand it, the way to go is to delete the item in one place and create it again by POSTing it at the target holding -- if there is a better/more efficient way, I'm glad to hear it.
 
-When doing so, I get an HTTP 200 for evey item I post and the API returns the item object for every item. So I'm thinking everything went right. 
+        When doing so, I get an HTTP 200 for evey item I post and the API returns the item object for every item. So I'm thinking everything went right. 
 
-But it gets funky:
+        But it gets funky:
 
-When looking in Alma, there's only one item on this holding (the first one I have POSTed), but there should be several. So I try to get the item list for all items on that bib:
+        When looking in Alma, there's only one item on this holding (the first one I have POSTed), but there should be several. So I try to get the item list for all items on that bib:
 
-GET https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/990011168120203339/holdings/ALL/items
+        GET https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/990011168120203339/holdings/ALL/items
 
-Response:
-{"item":[{"bib_data":{"mms_id":"990011168120203339","title":"Kaerntner Gemeindeblatt","author":null,"issn":null,"isbn":null,"complete_edition":"","network_number":["(Aleph)001116812UBG01","(AT-UBG)LB00780006","LB00780006"],"link":"https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/990011168120203339"},"holding_data":{"holding_id":"22326791880003339","call_number_type":{"value":"8","desc":"Other scheme"},"call_number":"Testsig","accession_number":"","copy_id":"","in_temp_location":false,"temp_library":{"value":null,"desc":null},"temp_location":{"value":null,"desc":null},"temp_call_number_type":{"value":"","desc":null},"temp_call_number":"","temp_policy":{"value":"","desc":null},"link":"https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/990011168120203339/holdings/22326791880003339"},"item_data":{"pid":"23326791890003339","barcode":"DC-25388","creation_date":"2018-08-01Z","modification_date":"2018-08-01Z","base_status":{"value":"1","desc":"Item in place"},"physical_material_type":{"value":"ISSBD","desc":"Bound Issue"},"policy":{"value":"60","desc":"Kopiebestellung"},"provenance":{"value":"","desc":null},"po_line":"","is_magnetic":false,"arrival_date":"1999-04-01Z","year_of_issue":"","enumeration_a":"1971","enumeration_b":"2","enumeration_c":"","enumeration_d":"","enumeration_e":"","enumeration_f":"","enumeration_g":"","enumeration_h":"","chronology_i":"1971","chronology_j":"","chronology_k":"","chronology_l":"","chronology_m":"","description":"1971,2","receiving_operator":"import","process_type":{"value":"","desc":null},"library":{"value":"BDEPO","desc":"Depotbibliothek"},"location":{"value":"DHB20","desc":"Depot HB20"},"alternative_call_number":"HB20-918","alternative_call_number_type":{"value":"8","desc":"Other scheme"},"storage_location_id":"","pages":"","pieces":"","public_note":"","fulfillment_note":"","internal_note_1":"FH03 - I 380584, 1971,2. 1971 :: KKD","internal_note_2":"","internal_note_3":"","statistics_note_1":"O#RAK#2014","statistics_note_2":"","statistics_note_3":"","requested":null,"edition":null,"imprint":null,"language":null,"physical_condition":{"value":null,"desc":null}},"link":"https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/990011168120203339/holdings/22326791880003339/items/23326791890003339"}],"total_record_count":1}
+        Response:
+        {"item":[{"bib_data":{"mms_id":"990011168120203339","title":"Kaerntner Gemeindeblatt","author":null,"issn":null,"isbn":null,"complete_edition":"","network_number":["(Aleph)001116812UBG01","(AT-UBG)LB00780006","LB00780006"],"link":"https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/990011168120203339"},"holding_data":{"holding_id":"22326791880003339","call_number_type":{"value":"8","desc":"Other scheme"},"call_number":"Testsig","accession_number":"","copy_id":"","in_temp_location":false,"temp_library":{"value":null,"desc":null},"temp_location":{"value":null,"desc":null},"temp_call_number_type":{"value":"","desc":null},"temp_call_number":"","temp_policy":{"value":"","desc":null},"link":"https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/990011168120203339/holdings/22326791880003339"},"item_data":{"pid":"23326791890003339","barcode":"DC-25388","creation_date":"2018-08-01Z","modification_date":"2018-08-01Z","base_status":{"value":"1","desc":"Item in place"},"physical_material_type":{"value":"ISSBD","desc":"Bound Issue"},"policy":{"value":"60","desc":"Kopiebestellung"},"provenance":{"value":"","desc":null},"po_line":"","is_magnetic":false,"arrival_date":"1999-04-01Z","year_of_issue":"","enumeration_a":"1971","enumeration_b":"2","enumeration_c":"","enumeration_d":"","enumeration_e":"","enumeration_f":"","enumeration_g":"","enumeration_h":"","chronology_i":"1971","chronology_j":"","chronology_k":"","chronology_l":"","chronology_m":"","description":"1971,2","receiving_operator":"import","process_type":{"value":"","desc":null},"library":{"value":"BDEPO","desc":"Depotbibliothek"},"location":{"value":"DHB20","desc":"Depot HB20"},"alternative_call_number":"HB20-918","alternative_call_number_type":{"value":"8","desc":"Other scheme"},"storage_location_id":"","pages":"","pieces":"","public_note":"","fulfillment_note":"","internal_note_1":"FH03 - I 380584, 1971,2. 1971 :: KKD","internal_note_2":"","internal_note_3":"","statistics_note_1":"O#RAK#2014","statistics_note_2":"","statistics_note_3":"","requested":null,"edition":null,"imprint":null,"language":null,"physical_condition":{"value":null,"desc":null}},"link":"https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/990011168120203339/holdings/22326791880003339/items/23326791890003339"}],"total_record_count":1}
 
-Hmm. Why is there only one item, when I got confirmation that everything went good -- the API returned HTTP 200 and the item object for every item.
+        Hmm. Why is there only one item, when I got confirmation that everything went good -- the API returned HTTP 200 and the item object for every item.
 
-It gets even more interesting: When retrieving the items for the specific holding (the only one, I might add), this happens:
+        It gets even more interesting: When retrieving the items for the specific holding (the only one, I might add), this happens:
 
-GET https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/990011168120203339/holdings/22326792100003339/items
+        GET https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/990011168120203339/holdings/22326792100003339/items
 
-Response:
-{"total_record_count":14}
+        Response:
+        {"total_record_count":14}
 
-That's all of the response -- no omissions. Total record count of 14, but no item list?
+        That's all of the response -- no omissions. Total record count of 14, but no item list?
 
-Best of it all: I can retrieve the individual items via API though (I know where to look for, as I got the item object as response for the POST request).
+        Best of it all: I can retrieve the individual items via API though (I know where to look for, as I got the item object as response for the POST request).
 
-For example:
-GET https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/990011168120203339/holdings/22326791910003339/items/23326791770003339
+        For example:
+        GET https://api-eu.hosted.exlibrisgroup.com/almaws/v1/bibs/990011168120203339/holdings/22326791910003339/items/23326791770003339
 
-This returns the corresponding item.
+        This returns the corresponding item.
 
-What am I doing wrong?
+        What am I doing wrong?
 
-If there's an easyer way to move items from one holding to another, I'm happy to be educated about that too.
+        If there's an easyer way to move items from one holding to another, I'm happy to be educated about that too.
 
-Best regards
-Stefan
+        Best regards
+        Stefan
+        #+END_QUOTE
       
 *** Alles Zusammensetzen
 ***** Das Modul

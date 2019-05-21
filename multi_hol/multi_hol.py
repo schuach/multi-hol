@@ -247,18 +247,40 @@ def move_item(item, bib_mms, target_hol_id):
     """Move items to other holding and delete source-holding"""
     # delete the items, but prevent the target-hol from being deleted
     barcode = item["item_data"]["barcode"]
-    title = item["bib_data"]["title"]
     target = item_api.format(mms_id=bib_mms, holding_id=target_hol_id)
-    if not target_hol_id in item["link"]:
-        logging.debug(f"move_item(): lösche {barcode}")
-        delete_item_response = session.delete(item["link"], params={"holdings": "delete"})
-    else:
-        logging.debug(f"move_item(): lösche {barcode}")
-        delete_item_response = session.delete(item["link"], params={"holdings": "retain"})
+    def delete_item(item):
+        if not target_hol_id in item["link"]:
+            logging.debug(f"move_item(): lösche {barcode}")
+            delete_item_response = session.delete(item["link"], params={"holdings": "delete"})
+        else:
+            logging.debug(f"move_item(): lösche {barcode}")
+            delete_item_response = session.delete(item["link"], params={"holdings": "retain"})
+        return delete_item_response
 
-    if not delete_item_response.status_code == 204:
-        logging.error(f"move_item(): löschen fehlgeschlagen bei {barcode}. {delete_item_response.text}")
-        return
+    delete_item_response = delete_item(item)
+    # check for errors in the deletion process
+    while delete_item_response.status_code != 204:
+        delete_res_json = delete_item_response.json()
+        if delete_res_json["errorList"]["error"][0]["errorCode"] == "401849":
+            # can't delete item because of POL
+            error = delete_res_json["errorList"]["error"][0]["errorMessage"].strip()
+            logging.warning(f"move_item(): Fehler bei DELETE: {error} Versuche ohne POL zu löschen.")
+
+            # delete POL and put it
+            pol = item["item_data"]["po_line"]
+            item["item_data"]["po_line"] = ""
+            put_item_response = session.put(item["link"],json=item).json()
+            if "errorsExist" in put_item_response:
+                error = put_item_response["errorList"]["error"][0]["errorMessage"]
+                error_code = put_item_response["errorList"]["error"][0]["errorCode"]
+                logging.error(f"move_item(): unerwarteter Fehler bei PUT: {error}; code: {error_code}")
+                return
+            else:
+                delete_item_response = delete_item(item)
+                item["item_data"]["po_line"] = pol
+        else:
+            logging.error(f"move_item(): löschen fehlgeschlagen bei {barcode}. {delete_item_response.text}")
+            return
 
     # post the item. Wait for 1 second before that, so that Alma can update the
     # barcode index. Try again, if barcode index is not updated.
@@ -269,7 +291,6 @@ def move_item(item, bib_mms, target_hol_id):
     while "errorsExist" in post_item_response:
         if tries > 5:
             error = post_item_response["errorList"]["error"][0]["errorMessage"]
-            # errors.append([bib_mms, barcode, title, error])
             logging.error(f"move_item(): {barcode} Fünfter POST-Versuch fehlgeschlagen, Abbruch.")
             break
         elif post_item_response["errorList"]["error"][0]["errorCode"] == "401873":
@@ -279,6 +300,7 @@ def move_item(item, bib_mms, target_hol_id):
             post_item_response = session.post(target, json=item).json()
             tries += 1
         elif post_item_response["errorList"]["error"][0]["errorCode"] == "401871":
+            # po_line (most likely inherited from holding) not found
             error = post_item_response["errorList"]["error"][0]["errorMessage"]
             error_code = post_item_response["errorList"]["error"][0]["errorCode"]
             logging.warning(f"move_item(): Fehler bei POST: {error} Item wird ohne Bestellnummer verarbeitet.")
