@@ -1019,6 +1019,13 @@
         die Zuordnung der Exemplare an ein Zielholding unter anderem dadurch
         passiert, dass die Signatur im zu bereinigenden Holding gleich anfängt, wie
         die im Zielholding.
+
+***** Technische Beschränkungen
+      Wegen technischer Beschränkungen in der Programmierschnittstelle von Alma
+      können nur Datensätze bearbeitet werden, die höchstens 500 Exemplare
+      haben! Hat ein Datensatz mehr als 500 Items, bricht die Verarbeitung mit
+      einer Fehlermeldung ab. Bitte führen Sie das Programm nicht aus, wenn mehr
+      als 500 Exemplare an einem Datensatz vorhanden sind.
 *** Arbeitsablauf
 ***** Allgemeine Überlegungen
       Dieses Programm unterstützt Sie /halb/automatisch beim der Datenpflege.
