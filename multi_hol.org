@@ -698,7 +698,9 @@
       #+END_SRC
 
       
-******* Problem mit der API # 
+***** Problem mit API # 00577276: Es können nur Datensätze mit <500 Items bearbetet werden
+      Derzeit (Mai 2019) können nur Datensätze mit maximal 500 Items
+      bearbeitet werden. Dieses Problem soll im Quartal 3/2019 behoben werden.
 ******* Problem mit der API # 00580797                  :Salesforce:noexport:
         #+BEGIN_QUOTE
         Dear Support Team,
