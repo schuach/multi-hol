@@ -1050,10 +1050,30 @@
       Bestellummern (die verworfen werden) werden in der Ausgabe des Programms
       in je einer Zeile angezeigt, die ungefähr so aussieht:
 
-      =WARNING move_item(): Fehler bei POST: PoLine 0000003139 not found.
-       Item wird ohne Bestellnummer verarbeitet.=
+      #+BEGIN_EXAMPLE
+        WARNING move_item(): Fehler bei POST: PoLine 0000003139 not found.
+        Item wird ohne Bestellnummer verarbeitet.
+      #+END_EXAMPLE
 
       Die Bestellung bleibt dabei unangetastet.
+
+******* Bestellposten, die direkt mit dem Exemplar verknüpft sind
+        Wenn eine Bestellung mit einem Exemplar verknüpft ist (kann bei
+        Fortsetzungsbestellungen vorkommen), erscheint zwar eine Fehlermeldung,
+        die Verarbeitung sollte aber funktionieren. Die Fehlermeldung schaut so
+        aus:
+        
+        #+BEGIN_EXAMPLE
+          WARNING move_item(): Fehler bei DELETE: Item delete errors: There is a
+          PO line POL-17562 linked to this item +BM79458700. Please handle the
+          order (using the PO line pages) before withdrawing this item / these
+          items. Versuche ohne POL zu löschen.
+        #+END_EXAMPLE
+
+        Wenn darauf keine weitere Fehlermeldung folgt, passt alles, das Exemplar
+        wird umgehängt und die Bestellnummer bleibt erhalten. Sollte direkt
+        darauf eine weitere Fehlermeldung folgen, melden Sie das bitte an die
+        Person, die bei Ihnen dieses Programm betreut.
 
 ***** MMS-ID des bibliografischen Datensatzes ermitteln
       Damit das Programm arbeiten kann brauchen wir die /lokale/ MMS-ID des
