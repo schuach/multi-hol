@@ -264,20 +264,27 @@ def move_item(item, bib_mms, target_hol_id):
         if delete_res_json["errorList"]["error"][0]["errorCode"] == "401849":
             # can't delete item because of POL
             error = delete_res_json["errorList"]["error"][0]["errorMessage"].strip()
-            logging.warning(f"move_item(): Fehler bei DELETE: {error} Versuche ohne POL zu löschen.")
-
-            # delete POL and put it
-            pol = item["item_data"]["po_line"]
-            item["item_data"]["po_line"] = ""
-            put_item_response = session.put(item["link"],json=item).json()
-            if "errorsExist" in put_item_response:
-                error = put_item_response["errorList"]["error"][0]["errorMessage"]
-                error_code = put_item_response["errorList"]["error"][0]["errorCode"]
-                logging.error(f"move_item(): unerwarteter Fehler bei PUT: {error}; code: {error_code}")
+            if "loans" in error:
+                logging.warning(f"move_item(): Fehler bei DELETE: {error}. Bitte entlehnte Exemplare manuell bearbeiten.")
                 return
+            elif "PO line" in error:
+                logging.warning(f"move_item(): Fehler bei DELETE: {error}. Versuche ohne POL zu löschen.")
+
+                # delete POL and put it
+                pol = item["item_data"]["po_line"]
+                item["item_data"]["po_line"] = ""
+                put_item_response = session.put(item["link"],json=item).json()
+                if "errorsExist" in put_item_response:
+                    error = put_item_response["errorList"]["error"][0]["errorMessage"]
+                    error_code = put_item_response["errorList"]["error"][0]["errorCode"]
+                    logging.error(f"move_item(): unerwarteter Fehler bei PUT: {error}; code: {error_code}")
+                    return
+                else:
+                    delete_item_response = delete_item(item)
+                    item["item_data"]["po_line"] = pol
             else:
-                delete_item_response = delete_item(item)
-                item["item_data"]["po_line"] = pol
+                logging.error(f"move_item(): unerwarteter Fehler bei DELETE: {error}; code: {error_code}")
+                return
         else:
             logging.error(f"move_item(): löschen fehlgeschlagen bei {barcode}. {delete_item_response.text}")
             return
