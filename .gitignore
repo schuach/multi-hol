@@ -110,3 +110,4 @@ data/
 doc/auto/
 doc/anleitung_multi-hol.tex
 multi_hol/conf.py
+tests/WORKING_DIR/

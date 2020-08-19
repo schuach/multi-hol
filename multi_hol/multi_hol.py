@@ -12,6 +12,7 @@ import logging
 import logging.config
 import getpass
 from .conf import config
+from multi_hol import __version__ as version
 
 # Get the users input
 def get_mmsids(msg=""):
@@ -97,7 +98,8 @@ API_KEY = config["API_KEY"]
 session = Session()
 session.headers.update({
     "accept": "application/json",
-    "authorization": f"apikey {API_KEY}"
+    "authorization": f"apikey {API_KEY}",
+    "User-Agent": f"multi-hol/{version}",
 })
 
 # function for backing up JSON to disk
@@ -123,6 +125,7 @@ def get_bch(holding_id):
         h = holxml.find('.//*[@tag="852"]/*[@code="h"]').text
     except:
         logging.exception("Fehler beim Lesen des Zielholdings (XML).")
+        logging.errorr(hol.text)
         print("Ein Fehler ist aufgetreten. Kontrollieren Sie die Log-Datei.")
         input("Drücken Sie ENTER um das Programm zu beenden.")
         sys.exit(1)

@@ -160,6 +160,7 @@
         import logging.config
         import getpass
         from .conf import config
+        from multi_hol import __version__ as version
       #+END_SRC
 
       - =sys= :: um Kommandozeilenargumente entgegenzunehmen (=sys.argv=) oder
@@ -183,11 +184,10 @@
       - =logging= :: um zu loggen
       - =getpass= :: damit wir fürs loggen den Usernamen abfragen können
       - =.conf= :: lokale Konfiguration in der Datei =conf.py=. Aus dieser Datei
-                   stehen Konstanten im dictionary =config=. Von dort holen wir
-                   uns den API_KEY und das Arbeitsverzeichnis. Nachdem man dort
-                   den API_KEY hineinschreibt, sollte diese Datei in
-                   =.gitignore= stehen.  Wie sie aussehen sollte können Sie im Abschnitt
-                   [[Beispiel f%C3%BCr conf.py][Beispiel für conf.py]] sehen.
+        stehen Konstanten im dictionary =config=. Von dort holen wir uns den
+        API_KEY und das Arbeitsverzeichnis. Nachdem man dort den API_KEY
+        hineinschreibt, sollte diese Datei in =.gitignore= stehen. Wie sie
+      aussehen sollte können Sie im Abschnitt [[*Beispiel für conf.py][Beispiel für conf.py]] sehen.
       
 ***** DONE Logging
       CLOSED: [2019-01-04 Fr 13:58]
@@ -270,7 +270,8 @@
       session = Session()
       session.headers.update({
           "accept": "application/json",
-          "authorization": f"apikey {API_KEY}"
+          "authorization": f"apikey {API_KEY}",
+          "User-Agent": f"multi-hol/{version}",
       })
       #+END_SRC
 
@@ -408,6 +409,7 @@
                 h = holxml.find('.//*[@tag="852"]/*[@code="h"]').text
             except:
                 logging.exception("Fehler beim Lesen des Zielholdings (XML).")
+                logging.errorr(hol.text)
                 print("Ein Fehler ist aufgetreten. Kontrollieren Sie die Log-Datei.")
                 input("Drücken Sie ENTER um das Programm zu beenden.")
                 sys.exit(1)
@@ -854,7 +856,7 @@
     dieses Repos auf GitHub hosten ...). Auch in =config= kommt das
     Arbeitsverzeichnis, in das die Backups und die logs geschrieben werden
     sollen. Nachdem =multi-hol/conf.py= bei mir in =.gitignore= steht, sehen sie
-    im Abschnitt [[Beispiel f%C3%BCr conf.py][Beispiel für conf.py]], wie diese Datei aussehen sollte.
+    im Abschnitt [[*Beispiel für conf.py][Beispiel für conf.py]], wie diese Datei aussehen sollte.
 
     Danach führen Sie folgende Zeile aus, um die ausführbare Datei zu erstellen.
     Das Flag -F macht, dass alles in eine einzelne Datei gepackt wird, anstatt
