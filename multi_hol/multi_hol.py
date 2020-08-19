@@ -240,6 +240,10 @@ def change_item_information(item):
     # clear the item policy
     item["item_data"]["policy"]["desc"] == None
     item["item_data"]["policy"]["value"] == ''
+
+    # set the physical material type to ISSBD
+    item["item_data"]["physical_material_type"]["value"] = "ISSBD"
+    item["item_data"]["physical_material_type"]["desc"] = "Bound Issue"
     return item
 
 # Move the item to the target holding

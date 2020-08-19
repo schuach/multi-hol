@@ -568,6 +568,13 @@
           item["item_data"]["policy"]["value"] == ''
         #+END_SRC
 
+******* TODO Materialtyp auf "ISSBD" setzen
+        #+NAME: set-material-type
+        #+begin_src python
+          item["item_data"]["physical_material_type"]["value"] = "ISSBD"
+          item["item_data"]["physical_material_type"]["desc"] = "Bound Issue"
+        #+end_src
+
 ******* DONE Zusammensetzen der einzelnen Änderungen zu einer Funktion
         CLOSED: [2018-08-01 Mit 07:14]
         Damit die einzelnen Änderungen im Script ein bisschen übersichtlicher
@@ -584,6 +591,9 @@
 
               # clear the item policy
               <<clear-item-policy>>
+
+              # set the physical material type to ISSBD
+              <<set-material-type>>
               return item
         #+END_SRC
 
