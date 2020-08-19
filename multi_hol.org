@@ -956,6 +956,10 @@
   Systems. Wenn Sie mit =pyinstaller= eine ausführbare Datei erstellen, müssen
   sie den String hier auf jeden fall direkt eintragen.
 
+* Versions-Historie
+*** 1.1
+    - physical_material_type wird immer auf "ISSBD" gesetzt.
+
 * Dokumentation für BearbeiterInnen
   :PROPERTIES:
   :EXPORT_FILE_NAME: doc/anleitung_multi-hol.pdf
