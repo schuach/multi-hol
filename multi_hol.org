@@ -345,7 +345,7 @@
         def get_items(mms_id, target_hol_id):
             mms_id = mms_id
             outlist = []
-            hol_bch = get_bch(target_hol_id)
+            hol_bch = get_bch(mms_id, target_hol_id)
 
             # get the item-list from Alma
             item_list = session.get(item_api.format(mms_id=mms_id, holding_id="ALL"),
@@ -390,18 +390,21 @@
             return outlist
       #+END_SRC
 
-***** DONE Inhaltliche Checks
+***** TODO Inhaltliche Checks
       CLOSED: [2019-01-04 Fr 09:43]
       :LOGBOOK:
       - State "DONE"       from "TODO"       [2019-01-04 Fr 09:43]
+      - State "TODO"       from "DONE"       [2022-02-02 Mi 14:19]
+      - Note: Fix missing param in holdings_api
+      - State "DONE"       from "TODO"       [2022-02-02 Mi 15:02]
       :END:
       Überprüfung, ob die richtigen Signaturen vorhanden sind, etc. Dazu holen
       wir uns zuerst das Zielholding und lesen dort =856 b=, =c= und =h= aus.
         
       #+NAME: get-bch
       #+BEGIN_SRC python
-        def get_bch(holding_id):
-            hol = session.get(holdings_api + "/" + holding_id, headers = {"accept": "application/xml"})
+        def get_bch(mms_id, holding_id):
+            hol = session.get(holdings_api.format(mms_id=mms_id)+ "/" + holding_id, headers = {"accept": "application/xml"})
             try:
                 holxml = ET.fromstring(hol.text)
                 b = holxml.find('.//*[@tag="852"]/*[@code="b"]').text
