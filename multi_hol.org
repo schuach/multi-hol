@@ -850,13 +850,18 @@
 
     Danach sollten Sie in =multi-hol/conf.py= in das dict =config= Ihren API-Key
     eintragen. Wie oben erwähnt verwende ich während der Entwicklung den Keyring
-    des Systems, für die Deployment-Version muss er aber tatsächlich hier
-    stehen. Daher steht diese Datei bei mir in =.gitignore=. Vergessen Sie
-    nicht, ihn danach wieder zu löschen (vor allem, falls Sie Ihre Version
-    dieses Repos auf GitHub hosten ...). Auch in =config= kommt das
-    Arbeitsverzeichnis, in das die Backups und die logs geschrieben werden
-    sollen. Nachdem =multi-hol/conf.py= bei mir in =.gitignore= steht, sehen sie
-    im Abschnitt [[*Beispiel für conf.py][Beispiel für conf.py]], wie diese Datei aussehen sollte.
+    des Systems, für die Erstellung einer ausführbaren Datei muss der Key
+    tatsächlich im Klartext hier stehen. Daher steht diese Datei bei mir in
+    =.gitignore=. Vergessen Sie nicht, ihn danach wieder zu löschen (vor allem,
+    falls Sie Ihre Version dieses Repos auf GitHub hosten ...). Wenn das Skript
+    auf einem Server laufen soll, bietet es sich an, den API-Key in einer
+    Umgebungsvariable zu speichern und von da zu holen. Damit steht er auch
+    nirgends im Klartext.
+
+    Auch in =config= kommt das Arbeitsverzeichnis, in das die Backups und die logs
+    geschrieben werden sollen. Nachdem =multi-hol/conf.py= bei mir in
+    =.gitignore= steht, sehen sie im Abschnitt [[*Beispiel für conf.py][Beispiel für conf.py]], wie diese
+    Datei aussehen sollte.
 
     Danach führen Sie folgende Zeile aus, um die ausführbare Datei zu erstellen.
     Das Flag -F macht, dass alles in eine einzelne Datei gepackt wird, anstatt
@@ -945,8 +950,15 @@
 
     config = {
         "WORKING_DIR": os.path.join( "Y:", os.sep, "MULTI-HOL", "TEST"),
+
         # get api key from system keyring
         "API_KEY": keyring.get_password("ALMA-API", "BIB-Sandbox").rstrip()
+        #
+        # for compiling an executable, the key has to be here
+        # "API_KEY": "super-secret-api-key"
+        #
+        # or get it from the environment
+        # "API_KEY": os.environ.get("API_KEY_ENVAR")
         }
 
   #+END_SRC
