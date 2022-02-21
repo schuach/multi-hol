@@ -3,6 +3,7 @@
 #+AUTHOR: Stefan Schuh
 #+EMAIL: stefan.schuh@uni-graz.at
 #+DATE: 2018-07-23 17:52
+#+STARTUP: noindent
 #+DESCRIPTION:
 #+KEYWORDS:
 #+LANGUAGE: de
@@ -14,6 +15,14 @@
 #+LATEX_HEADER: \usepackage[a4paper,margin=2.54cm]{geometry}
 #+EXPORT_FILE_NAME: doc/doc.html
 
+* Einrückungen beim Export
+  Wenn ~org-src-preserve-indentation~ gesetzt ist, wird bei ~org-babel-tangle~ mit den Einrückungen exportiert, die in der org-Datei sind. Das macht die Python-Datei natürlich unbrauchbar. Daher:
+
+  #+begin_src elisp
+(setq org-src-preserve-indentation nil)
+  #+end_src
+
+  #+RESULTS:
 
 * Ausgangslage und Ziel
   Bei der Datenvorbereitung vor der Migration konnten nicht alle Exemplare einem
