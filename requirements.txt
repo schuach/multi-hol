@@ -10,7 +10,7 @@ decorator==4.3.0
 easygui==0.98.1
 entrypoints==0.2.3
 idna==2.8
-ipython==7.16.3
+ipython==8.10.0
 ipython-genutils==0.2.0
 jedi==0.13.2
 jeepney==0.4
