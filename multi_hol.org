@@ -578,8 +578,8 @@
 
         #+NAME: clear-item-policy
         #+BEGIN_SRC python
-          item["item_data"]["policy"]["desc"] == None
-          item["item_data"]["policy"]["value"] == ''
+          item["item_data"]["policy"]["desc"] = None
+          item["item_data"]["policy"]["value"] = ''
         #+END_SRC
 
 ******* TODO Materialtyp auf "ISSBD" setzen

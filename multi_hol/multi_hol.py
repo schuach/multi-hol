@@ -241,8 +241,8 @@ def change_item_information(item):
         item["item_data"]["alternative_call_number"] = f"{alt_call_nr} ; {hol_call_nr}"
 
     # clear the item policy
-    item["item_data"]["policy"]["desc"] == None
-    item["item_data"]["policy"]["value"] == ''
+    item["item_data"]["policy"]["desc"] = None
+    item["item_data"]["policy"]["value"] = ''
 
     # set the physical material type to ISSBD
     item["item_data"]["physical_material_type"]["value"] = "ISSBD"
