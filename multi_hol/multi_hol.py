@@ -125,7 +125,7 @@ def get_bch(mms_id, holding_id):
         h = holxml.find('.//*[@tag="852"]/*[@code="h"]').text
     except:
         logging.exception("Fehler beim Lesen des Zielholdings (XML).")
-        logging.errorr(hol.text)
+        logging.error(hol.text)
         print("Ein Fehler ist aufgetreten. Kontrollieren Sie die Log-Datei.")
         input("Drücken Sie ENTER um das Programm zu beenden.")
         sys.exit(1)
