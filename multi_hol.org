@@ -670,7 +670,7 @@
             while delete_item_response.status_code != 204:
                 delete_res_json = delete_item_response.json()
                 error_code = delete_res_json["errorList"]["error"][0]["errorCode"]
-                error_msg = delete_res_json["errorList"]["error"][0]["errorMesage"]
+                error_msg = delete_res_json["errorList"]["error"][0]["errorMessage"]
                 if error_code == "401849" and "PO line" in error_msg:
                     # can't delete item because of POL
                     error = delete_res_json["errorList"]["error"][0]["errorMessage"].strip()
